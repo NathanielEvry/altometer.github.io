@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>I Just Do Things</title>
+    <link>https://ijustdothings.com/</link>
+    <description>Recent content on I Just Do Things</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <lastBuildDate>Mon, 10 Apr 2023 10:00:00 -0500</lastBuildDate><atom:link href="https://ijustdothings.com/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>New Blog, Who Dis?</title>
+      <link>https://ijustdothings.com/posts/new-blog-who-dis/</link>
+      <pubDate>Mon, 10 Apr 2023 10:00:00 -0500</pubDate>
+      
+      <guid>https://ijustdothings.com/posts/new-blog-who-dis/</guid>
+      <description>New Blog, Who Dis?  Link to heading   It&amp;rsquo;s a question that we&amp;rsquo;ve all asked at some point in our lives - whether we&amp;rsquo;re starting a new job, moving to a new city, or embarking on a new adventure. And it&amp;rsquo;s a question that I&amp;rsquo;m asking myself today, as I sit down to write my first post for this brand new blog.
+My name is Nathaniel Evry, and I&amp;rsquo;m a passionate technologist with a diverse set of skills and a love for innovation.</description>
+    </item>
+    
+    <item>
+      <title></title>
+      <link>https://ijustdothings.com/about/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://ijustdothings.com/about/</guid>
+      <description>About Me  Link to heading   Greetings! I&amp;rsquo;m Nathaniel Evry, a passionate technologist with a diverse set of skills and a love for innovation. With years of experience in the tech industry, I&amp;rsquo;ve built and implemented software systems for a variety of clients and projects. Currently, I serve as the Chief Research Officer at quub, a small aerospace startup. In this role, I bring my knowledge of miniaturized electronics, signal transmission and reception, hardware design, coding, architecture, and research to the table.</description>
+    </item>
+    
+  </channel>
+</rss>
