@@ -2,24 +2,39 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>https://ijustdothings.com/</loc>
-    <lastmod>2023-04-10T10:00:00-05:00</lastmod>
+    <loc>https://ijustdothings.com/authors/</loc>
+    <lastmod>2023-04-14T10:31:39-04:00</lastmod>
   </url><url>
-    <loc>https://ijustdothings.com/posts/new-blog-who-dis/</loc>
-    <lastmod>2023-04-10T10:00:00-05:00</lastmod>
+    <loc>https://ijustdothings.com/tags/for-fun/</loc>
+    <lastmod>2023-04-14T10:31:39-04:00</lastmod>
+  </url><url>
+    <loc>https://ijustdothings.com/</loc>
+    <lastmod>2023-04-14T10:31:39-04:00</lastmod>
+  </url><url>
+    <loc>https://ijustdothings.com/authors/nathaniel-evry/</loc>
+    <lastmod>2023-04-14T10:31:39-04:00</lastmod>
   </url><url>
     <loc>https://ijustdothings.com/posts/</loc>
+    <lastmod>2023-04-14T10:31:39-04:00</lastmod>
+  </url><url>
+    <loc>https://ijustdothings.com/series/</loc>
+    <lastmod>2023-04-14T10:31:39-04:00</lastmod>
+  </url><url>
+    <loc>https://ijustdothings.com/series/singular-ant-man/</loc>
+    <lastmod>2023-04-14T10:31:39-04:00</lastmod>
+  </url><url>
+    <loc>https://ijustdothings.com/tags/</loc>
+    <lastmod>2023-04-14T10:31:39-04:00</lastmod>
+  </url><url>
+    <loc>https://ijustdothings.com/posts/singular-ant-man-tale/</loc>
+    <lastmod>2023-04-14T10:31:39-04:00</lastmod>
+  </url><url>
+    <loc>https://ijustdothings.com/posts/new-blog-who-dis/</loc>
     <lastmod>2023-04-10T10:00:00-05:00</lastmod>
   </url><url>
     <loc>https://ijustdothings.com/about/</loc>
     <priority>0</priority>
   </url><url>
-    <loc>https://ijustdothings.com/authors/</loc>
-  </url><url>
     <loc>https://ijustdothings.com/categories/</loc>
-  </url><url>
-    <loc>https://ijustdothings.com/series/</loc>
-  </url><url>
-    <loc>https://ijustdothings.com/tags/</loc>
   </url>
 </urlset>
