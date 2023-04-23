@@ -6,7 +6,18 @@
     <description>Recent content in Posts on I Just Do Things</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Fri, 14 Apr 2023 10:31:39 -0400</lastBuildDate><atom:link href="https://ijustdothings.com/posts/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sun, 23 Apr 2023 13:04:43 -0400</lastBuildDate><atom:link href="https://ijustdothings.com/posts/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Exploring Graphics with Pi Pico and SSD1306 OLED Display</title>
+      <link>https://ijustdothings.com/posts/pi-pico-oled-experiments-1/</link>
+      <pubDate>Sun, 23 Apr 2023 13:04:43 -0400</pubDate>
+      
+      <guid>https://ijustdothings.com/posts/pi-pico-oled-experiments-1/</guid>
+      <description>A photo of the Pi Pico held together by gaffer tape
+  Lately, I&amp;rsquo;ve been diving into the world of simple graphic elements and finding ways to render them on a compact SSD1306, similar to those I&amp;rsquo;ve used in other projects like SpaceHex - Github.
+In this post, we&amp;rsquo;ll explore the development process of a modular display-based tool using the RP2040 Pi Pico and an SSD1306 OLED display with Micropython.</description>
+    </item>
+    
     <item>
       <title>The Legend of Anthony: A Singular Ant-Man Tale</title>
       <link>https://ijustdothings.com/posts/singular-ant-man-tale/</link>

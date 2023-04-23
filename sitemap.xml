@@ -2,28 +2,37 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
+    <loc>https://ijustdothings.com/posts/pi-pico-oled-experiments-1/</loc>
+    <lastmod>2023-04-23T13:04:43-04:00</lastmod>
+  </url><url>
+    <loc>https://ijustdothings.com/</loc>
+    <lastmod>2023-04-23T13:04:43-04:00</lastmod>
+  </url><url>
+    <loc>https://ijustdothings.com/tags/pico/</loc>
+    <lastmod>2023-04-23T13:04:43-04:00</lastmod>
+  </url><url>
+    <loc>https://ijustdothings.com/series/pico-oled/</loc>
+    <lastmod>2023-04-23T13:04:43-04:00</lastmod>
+  </url><url>
+    <loc>https://ijustdothings.com/posts/</loc>
+    <lastmod>2023-04-23T13:04:43-04:00</lastmod>
+  </url><url>
+    <loc>https://ijustdothings.com/series/</loc>
+    <lastmod>2023-04-23T13:04:43-04:00</lastmod>
+  </url><url>
+    <loc>https://ijustdothings.com/tags/</loc>
+    <lastmod>2023-04-23T13:04:43-04:00</lastmod>
+  </url><url>
     <loc>https://ijustdothings.com/authors/</loc>
     <lastmod>2023-04-14T10:31:39-04:00</lastmod>
   </url><url>
     <loc>https://ijustdothings.com/tags/for-fun/</loc>
     <lastmod>2023-04-14T10:31:39-04:00</lastmod>
   </url><url>
-    <loc>https://ijustdothings.com/</loc>
-    <lastmod>2023-04-14T10:31:39-04:00</lastmod>
-  </url><url>
     <loc>https://ijustdothings.com/authors/nathaniel-evry/</loc>
     <lastmod>2023-04-14T10:31:39-04:00</lastmod>
   </url><url>
-    <loc>https://ijustdothings.com/posts/</loc>
-    <lastmod>2023-04-14T10:31:39-04:00</lastmod>
-  </url><url>
-    <loc>https://ijustdothings.com/series/</loc>
-    <lastmod>2023-04-14T10:31:39-04:00</lastmod>
-  </url><url>
     <loc>https://ijustdothings.com/series/singular-ant-man/</loc>
-    <lastmod>2023-04-14T10:31:39-04:00</lastmod>
-  </url><url>
-    <loc>https://ijustdothings.com/tags/</loc>
     <lastmod>2023-04-14T10:31:39-04:00</lastmod>
   </url><url>
     <loc>https://ijustdothings.com/posts/singular-ant-man-tale/</loc>
