@@ -8,3 +8,4 @@ document.addEventListener('keydown', function(e) {
     konamiKeys = [];
   }
 });
+
