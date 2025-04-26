@@ -1,243 +1,168 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <title>I Just Do Things</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nathaniel Evry | I Just Do Things</title>
+  <link href="https://fonts.googleapis.com/css2?family=Jomolhari&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --accent: #990000;
+      --bg-light: #ffffff;
+      --bg-dark: #111111;
+      --text-light: #000000;
+      --text-dark: #f0f0f0;
+    }
 
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-KFZ76CV7PH"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+    body {
+      margin: 0;
+      font-family: 'Jomolhari', Georgia, serif;
+      background: var(--bg-light);
+      color: var(--text-light);
+      transition: background 0.3s, color 0.3s;
+    }
 
-  gtag('config', 'G-KFZ76CV7PH');
-</script>
+    @media (prefers-color-scheme: dark) {
+      body {
+        background: var(--bg-dark);
+        color: var(--text-dark);
+      }
+    }
 
-  <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="color-scheme" content="light dark">
+    header {
+      text-align: center;
+      padding: 3rem 1rem 1rem;
+    }
 
+    header h1 {
+      font-size: 3rem;
+      color: var(--accent);
+    }
 
+    nav {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
 
+    nav a {
+      color: inherit;
+      text-decoration: none;
+      font-weight: bold;
+      border-bottom: 2px solid transparent;
+      transition: border-bottom 0.2s;
+    }
 
-<meta name="author" content="Nathaniel Evry">
-<meta name="description" content="A blog about my adventures in the vast and murky depths of technology, including AI, coding, and gadget reviews.">
-<meta name="keywords" content="assistive AI, screwy things, gadgets">
+    nav a:hover {
+      border-bottom: 2px solid var(--accent);
+    }
 
-<meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="I Just Do Things"/>
-<meta name="twitter:description" content="A blog about my adventures in the vast and murky depths of technology, including AI, coding, and gadget reviews."/>
+    section.gallery {
+      padding: 2rem 1rem;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1.5rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
 
-<meta property="og:title" content="I Just Do Things" />
-<meta property="og:description" content="A blog about my adventures in the vast and murky depths of technology, including AI, coding, and gadget reviews." />
-<meta property="og:type" content="website" />
-<meta property="og:url" content="https://ijustdothings.com/" />
+    .gallery-item {
+      background: rgba(153, 0, 0, 0.05);
+      border: 1px solid var(--accent);
+      border-radius: 12px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.2s;
+      width: 200px;
+    }
 
+    .gallery-item:hover {
+      transform: scale(1.02);
+    }
 
+    .gallery-item img {
+      width: 100%;
+      height: 150px;
+      object-fit: cover;
+    }
 
+    .gallery-item p {
+      margin: 0;
+      padding: 0.5rem;
+      font-size: 0.9rem;
+      text-align: center;
+    }
 
+    footer {
+      text-align: center;
+      font-size: 0.8rem;
+      margin: 2rem 0 1rem;
+      opacity: 0.7;
+    }
 
-<link rel="canonical" href="https://ijustdothings.com/">
+    .theme-toggle {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      background: none;
+      border: 2px solid var(--accent);
+      color: var(--accent);
+      padding: 0.5rem;
+      cursor: pointer;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 1.2rem;
+    }
 
-
-<link rel="preload" href="/fonts/forkawesome-webfont.woff2?v=1.2.0" as="font" type="font/woff2" crossorigin>
-
-
-  
-  
-  <link rel="stylesheet" href="/css/coder.min.65236a6d834b26194eed04a2a3b45e44d9194ef9e620253705d4bef03bd7ef81.css" integrity="sha256-ZSNqbYNLJhlO7QSio7ReRNkZTvnmICU3BdS&#43;8DvX74E=" crossorigin="anonymous" media="screen" />
-
-
-
-
-
-
-  
-    
-    
-    <link rel="stylesheet" href="/css/coder-dark.min.f6534b0b446b75d9b6ad77a97d43ede2ddaeff1b6e2361fb7198d6f8fcb7f83f.css" integrity="sha256-9lNLC0Rrddm2rXepfUPt4t2u/xtuI2H7cZjW&#43;Py3&#43;D8=" crossorigin="anonymous" media="screen" />
-  
-
-
-
- 
-
-
-
-
-<link rel="icon" type="image/png" href="/images/favicon-32x32.png" sizes="32x32">
-<link rel="icon" type="image/png" href="/images/favicon-16x16.png" sizes="16x16">
-
-<link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
-<link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
-
-<link rel="manifest" href="/site.webmanifest">
-<link rel="mask-icon" href="/images/safari-pinned-tab.svg" color="#5bbad5">
-
-
-<link rel="alternate" type="application/rss+xml" href="/index.xml" title="I Just Do Things" />
-
-
-<meta name="generator" content="Hugo 0.93.3" />
-
-
-
-
-
-  <script src="/js/custom.js"></script>
-  <link rel="stylesheet" href="/css/style.css">
-
+    /* Easter eggs */
+    /* <!-- You found me, hello dreamer --> */
+  </style>
 </head>
+<body>
 
+  <button class="theme-toggle" onclick="toggleTheme()">\U0001f31e/\U0001f319</button>
 
-
-
-
-
-<body class="preload-transitions colorscheme-dark">
-  
-<div class="float-container">
-    <a id="dark-mode-toggle" class="colorscheme-toggle">
-        <i class="fa fa-adjust fa-fw" aria-hidden="true"></i>
-    </a>
-</div>
-
-
-  <main class="wrapper">
-    <nav class="navigation">
-  <section class="container">
-    <a class="navigation-title" href="/">
-      I Just Do Things
-    </a>
-    
-      <input type="checkbox" id="menu-toggle" />
-      <label class="menu-button float-right" for="menu-toggle">
-        <i class="fa fa-bars fa-fw" aria-hidden="true"></i>
-      </label>
-      <ul class="navigation-list">
-        
-          
-            <li class="navigation-item">
-              <a class="navigation-link" href="/">Home</a>
-            </li>
-          
-            <li class="navigation-item">
-              <a class="navigation-link" href="/posts/">Posts</a>
-            </li>
-          
-            <li class="navigation-item">
-              <a class="navigation-link" href="/about/">About</a>
-            </li>
-          
-        
-        
-      </ul>
-    
-  </section>
-</nav>
-
-
-    <div class="content">
-      
-  <section class="container centered">
-  <div class="about">
-    
-  
-    <div class="avatar"><img src="/images/avatar.webp" alt="avatar"></div>
-  
-
-
-
-
+  <header>
     <h1>Nathaniel Evry</h1>
+    <nav>
+      <a href="https://github.com/NathanielEvry" target="_blank">GitHub</a>
+      <a href="https://twitter.com/NathanielEvry" target="_blank">Twitter</a>
+      <a href="https://linkedin.com/in/nathanielevry" target="_blank">LinkedIn</a>
+      <a href="https://youtube.com/@NathanielEvry" target="_blank">YouTube</a>
+      <a href="mailto:Nathaniel@IJustDoThings.com">Email</a>
+      <a href="https://paypal.me/NathanielEvry" target="_blank">Support</a>
+    </nav>
+  </header>
 
-<h2>AI technologist with a passion for innovation and creative problem-solving. </h2>
-
-
-
-    
-<ul>
-  
-    
-      <li>
-        <a href="https://twitter.com/NathanielEvry" aria-label="Twitter"   >
-          <i class="fa fa-twitter fa-2x" aria-hidden="true"></i>
-        </a>
-      </li>
-    
-  
-    
-      <li>
-        <a href="https://linkedin.com/in/nathanielevry" aria-label="LinkedIn"   >
-          <i class="fa fa-linkedin fa-2x" aria-hidden="true"></i>
-        </a>
-      </li>
-    
-  
-</ul>
-
-  </div>
-
-  
-
-</section>
-
-
+  <section class="gallery" id="projects">
+    <!-- Example item -->
+    <div class="gallery-item" onclick="window.location.href='link-to-project.html'">
+      <img src="thumbnail1.png" alt="Project Thumbnail">
+      <p>Simple Project Description</p>
     </div>
-
-    <footer class="footer">
-  <section class="container">
-    ©
-    
-    2023
-     Nathaniel Evry 
-    ·
-    
-    Powered by <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/" target="_blank" rel="noopener">Coder</a>.
-    
+    <!-- Add more projects easily by copying the div above -->
   </section>
-</footer>
 
-  </main>
+  <footer>
+    ijustdothings.com &copy; 2025
+  </footer>
 
-  
+  <script>
+    function toggleTheme() {
+      const currentBg = getComputedStyle(document.body).backgroundColor;
+      if (currentBg === 'rgb(17, 17, 17)') {
+        document.body.style.background = 'var(--bg-light)';
+        document.body.style.color = 'var(--text-light)';
+      } else {
+        document.body.style.background = 'var(--bg-dark)';
+        document.body.style.color = 'var(--text-dark)';
+      }
+    }
+  </script>
 
-  
-  
-  <script src="/js/coder.min.6ae284be93d2d19dad1f02b0039508d9aab3180a12a06dcc71b0b0ef7825a317.js" integrity="sha256-auKEvpPS0Z2tHwKwA5UI2aqzGAoSoG3McbCw73gloxc="></script>
-  
-
-  
-
-  
-
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
 </body>
-
 </html>
+
