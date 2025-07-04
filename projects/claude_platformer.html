@@ -1,0 +1,1712 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quantum Platformer</title>
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+        background-color: #000;
+        font-family: "Courier New", monospace;
+        color: #fff;
+        user-select: none;
+      }
+      canvas {
+        display: block;
+      }
+      #game-container {
+        position: relative;
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      #game-canvas {
+        background-color: #000;
+        box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+      }
+      .overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background-color: rgba(0, 0, 0, 0.8);
+        z-index: 10;
+        transition: opacity 0.5s;
+      }
+      .overlay h1 {
+        font-size: 3em;
+        margin-bottom: 0.5em;
+        text-shadow: 0 0 10px rgba(0, 255, 255, 0.7);
+        color: #fff;
+      }
+      .overlay p {
+        font-size: 1.2em;
+        margin-bottom: 2em;
+        max-width: 600px;
+        text-align: center;
+        line-height: 1.5;
+        color: #ccc;
+      }
+      button {
+        background-color: #ff3366;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        font-size: 1.2em;
+        cursor: pointer;
+        border-radius: 5px;
+        font-family: "Courier New", monospace;
+        transition: all 0.2s;
+        box-shadow: 0 0 10px rgba(255, 51, 102, 0.7);
+      }
+      button:hover {
+        background-color: #ff6699;
+        transform: scale(1.05);
+      }
+      #controls {
+        position: absolute;
+        bottom: 10px;
+        left: 10px;
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.8em;
+        pointer-events: none;
+      }
+      #mute-button {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background-color: transparent;
+        color: rgba(255, 255, 255, 0.7);
+        box-shadow: none;
+        z-index: 15;
+      }
+      #mute-button:hover {
+        color: white;
+      }
+      #pause-overlay {
+        opacity: 0;
+        pointer-events: none;
+      }
+      #game-over-overlay,
+      #victory-overlay {
+        opacity: 0;
+        pointer-events: none;
+      }
+      .particle {
+        position: absolute;
+        pointer-events: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="game-container">
+      <canvas id="game-canvas"></canvas>
+      <div id="controls">
+        A/D or ←/→: Move | Space or ↑: Jump | P: Pause | M: Mute
+      </div>
+      <button id="mute-button">🔊</button>
+
+      <div id="start-overlay" class="overlay">
+        <h1>QUANTUM REALM</h1>
+        <p>
+          A strange force has corrupted the mushroom guardians of the quantum
+          forest. Find the golden pole to restore balance to the realm.
+        </p>
+        <button id="start-button">ENTER THE REALM</button>
+      </div>
+
+      <div id="pause-overlay" class="overlay">
+        <h1>PAUSED</h1>
+        <p>Reality is temporarily suspended in the quantum realm.</p>
+        <button id="resume-button">RESUME</button>
+      </div>
+
+      <div id="game-over-overlay" class="overlay">
+        <h1>QUANTUM COLLAPSE</h1>
+        <p>
+          Your energy has dissipated across the multiverse. But in another
+          reality, you might succeed...
+        </p>
+        <button id="retry-button">TRY AGAIN</button>
+      </div>
+
+      <div id="victory-overlay" class="overlay">
+        <h1>HARMONY RESTORED</h1>
+        <p>
+          The golden pole resonates with your energy, cleansing the corruption
+          from the quantum realm. The mushroom guardians are at peace once more.
+        </p>
+        <button id="play-again-button">PLAY AGAIN</button>
+      </div>
+    </div>
+
+    <script>
+        // Main game class that orchestrates everything
+        class QuantumPlatformer {
+          constructor() {
+            // Game container
+            this.container = document.getElementById("game-container");
+            this.canvas = document.getElementById("game-canvas");
+            this.ctx = this.canvas.getContext("2d");
+
+            // Set canvas size
+            this.resizeCanvas();
+            window.addEventListener("resize", () => this.resizeCanvas());
+
+            // Game state
+            this.gameState = "start"; // start, playing, paused, gameOver, victory
+            this.lastTime = 0;
+            this.accumulator = 0;
+            this.timeStep = 1000 / 60; // 60 fps
+
+            // Game settings
+            this.gravity = 0.6;
+            this.particlePool = [];
+            this.activeParticles = [];
+            this.maxParticles = 200;
+            this.createParticlePool();
+
+            // Level setup
+            this.setupLevel();
+
+            // Audio manager
+            this.audio = new AudioManager();
+
+            // Handle input
+            this.input = new InputManager();
+            this.bindEvents();
+
+            // Start the game loop
+            requestAnimationFrame((time) => this.gameLoop(time));
+          }
+
+          createParticlePool() {
+            for (let i = 0; i < this.maxParticles; i++) {
+              const particle = document.createElement("div");
+              particle.className = "particle";
+              particle.style.width = "4px";
+              particle.style.height = "4px";
+              particle.style.backgroundColor = "#ffffff";
+              particle.style.position = "absolute";
+              particle.style.borderRadius = "50%";
+              particle.style.display = "none";
+              this.container.appendChild(particle);
+              this.particlePool.push({
+                element: particle,
+                active: false,
+              });
+            }
+          }
+
+          spawnParticles(x, y, color, count, spread, speed, lifetime) {
+            for (let i = 0; i < count; i++) {
+              const particle = this.particlePool.find((p) => !p.active);
+              if (!particle) continue;
+
+              particle.active = true;
+              particle.element.style.display = "block";
+              particle.element.style.backgroundColor = color;
+
+              // Convert canvas coordinates to screen coordinates
+              const rect = this.canvas.getBoundingClientRect();
+              const screenX = rect.left + (x / this.canvas.width) * rect.width;
+              const screenY = rect.top + (y / this.canvas.height) * rect.height;
+
+              particle.element.style.left = `${screenX}px`;
+              particle.element.style.top = `${screenY}px`;
+
+              const angle = Math.random() * Math.PI * 2;
+              const distance = Math.random() * spread;
+
+              particle.vx = Math.cos(angle) * (Math.random() * speed);
+              particle.vy =
+                Math.sin(angle) * (Math.random() * speed) - speed * 0.5; // Bias upward
+              particle.life = lifetime * (0.7 + Math.random() * 0.6);
+              particle.maxLife = particle.life;
+
+              this.activeParticles.push(particle);
+            }
+          }
+
+          updateParticles(deltaTime) {
+            const toRemove = [];
+
+            this.activeParticles.forEach((particle) => {
+              particle.life -= deltaTime;
+
+              if (particle.life <= 0) {
+                particle.active = false;
+                particle.element.style.display = "none";
+                toRemove.push(particle);
+                return;
+              }
+
+              // Apply gravity
+              particle.vy += 0.05;
+
+              // Get current position
+              const rect = this.canvas.getBoundingClientRect();
+              const currentX = parseFloat(particle.element.style.left);
+              const currentY = parseFloat(particle.element.style.top);
+
+              // Update position
+              const newX = currentX + particle.vx;
+              const newY = currentY + particle.vy;
+
+              particle.element.style.left = `${newX}px`;
+              particle.element.style.top = `${newY}px`;
+
+              // Fade out
+              const opacity = particle.life / particle.maxLife;
+              particle.element.style.opacity = opacity;
+            });
+
+            // Remove inactive particles
+            this.activeParticles = this.activeParticles.filter(
+              (p) => !toRemove.includes(p)
+            );
+          }
+
+          setupLevel() {
+            // Create level with procedural generation
+            this.level = new Level(this.canvas.width, this.canvas.height);
+
+            // Create player
+            this.player = new Player(
+              this.canvas.width * 0.15,
+              this.canvas.height * 0.5,
+              this
+            );
+
+            // Reset camera
+            this.cameraX = 0;
+            this.cameraY = 0;
+            this.targetCameraX = 0;
+            this.targetCameraY = 0;
+          }
+
+          resizeCanvas() {
+            // Keep aspect ratio but scale to fit window
+            const aspectRatio = 16 / 9;
+            let width = this.container.clientWidth;
+            let height = this.container.clientHeight;
+
+            if (width / height > aspectRatio) {
+              width = height * aspectRatio;
+            } else {
+              height = width / aspectRatio;
+            }
+
+            this.canvas.width = 1280;
+            this.canvas.height = 720;
+
+            // Scale canvas with CSS
+            this.canvas.style.width = `${width}px`;
+            this.canvas.style.height = `${height}px`;
+          }
+
+          updateCamera() {
+            // Target camera position focuses on player
+            const centerX = this.canvas.width * 0.5;
+            const centerY = this.canvas.height * 0.5;
+
+            this.targetCameraX = this.player.x - centerX;
+            this.targetCameraY = this.player.y - centerY;
+
+            // Clamp camera to level bounds
+            const maxCameraX = Math.max(0, this.level.width - this.canvas.width);
+            const maxCameraY = Math.max(
+              0,
+              this.level.height - this.canvas.height
+            );
+
+            this.targetCameraX = Math.max(
+              0,
+              Math.min(this.targetCameraX, maxCameraX)
+            );
+            this.targetCameraY = Math.max(
+              0,
+              Math.min(this.targetCameraY, maxCameraY)
+            );
+
+            // Smooth camera movement
+            this.cameraX += (this.targetCameraX - this.cameraX) * 0.1;
+            this.cameraY += (this.targetCameraY - this.cameraY) * 0.1;
+          }
+
+          bindEvents() {
+            // Start game
+            document
+              .getElementById("start-button")
+              .addEventListener("click", () => {
+                this.startGame();
+              });
+
+            // Resume game
+            document
+              .getElementById("resume-button")
+              .addEventListener("click", () => {
+                this.resumeGame();
+              });
+
+            // Retry after game over
+            document
+              .getElementById("retry-button")
+              .addEventListener("click", () => {
+                this.restartGame();
+              });
+
+            // Play again after victory
+            document
+              .getElementById("play-again-button")
+              .addEventListener("click", () => {
+                this.restartGame();
+              });
+
+            // Mute button
+            document
+              .getElementById("mute-button")
+              .addEventListener("click", () => {
+                this.audio.toggleMute();
+                document.getElementById("mute-button").textContent = this.audio
+                  .muted
+                  ? "🔇"
+                  : "🔊";
+              });
+
+            // Pause with P key
+            document.addEventListener("keydown", (e) => {
+              if (e.key === "p" && this.gameState === "playing") {
+                this.pauseGame();
+              } else if (e.key === "p" && this.gameState === "paused") {
+                this.resumeGame();
+              } else if (e.key === "m") {
+                this.audio.toggleMute();
+                document.getElementById("mute-button").textContent = this.audio
+                  .muted
+                  ? "🔇"
+                  : "🔊";
+              }
+            });
+          }
+
+          startGame() {
+            document.getElementById("start-overlay").style.opacity = "0";
+            document.getElementById("start-overlay").style.pointerEvents = "none";
+            this.gameState = "playing";
+            this.audio.playMusic();
+          }
+
+          pauseGame() {
+            document.getElementById("pause-overlay").style.opacity = "1";
+            document.getElementById("pause-overlay").style.pointerEvents = "auto";
+            this.gameState = "paused";
+          }
+
+          resumeGame() {
+            document.getElementById("pause-overlay").style.opacity = "0";
+            document.getElementById("pause-overlay").style.pointerEvents = "none";
+            this.gameState = "playing";
+          }
+
+          gameOver() {
+            document.getElementById("game-over-overlay").style.opacity = "1";
+            document.getElementById("game-over-overlay").style.pointerEvents =
+              "auto";
+            this.gameState = "gameOver";
+            this.audio.playSound("gameOver");
+          }
+
+          victory() {
+            document.getElementById("victory-overlay").style.opacity = "1";
+            document.getElementById("victory-overlay").style.pointerEvents =
+              "auto";
+            this.gameState = "victory";
+            this.audio.playSound("victory");
+          }
+
+          restartGame() {
+            // Hide all overlays
+            document.getElementById("game-over-overlay").style.opacity = "0";
+            document.getElementById("game-over-overlay").style.pointerEvents =
+              "none";
+            document.getElementById("victory-overlay").style.opacity = "0";
+            document.getElementById("victory-overlay").style.pointerEvents =
+              "none";
+
+            // Reset the game
+            this.setupLevel();
+            this.gameState = "playing";
+            this.audio.playMusic();
+          }
+
+          update(deltaTime) {
+            // Update game logic
+            this.player.update(deltaTime, this.input, this.level);
+            this.level.update(deltaTime, this.player);
+            this.updateCamera();
+            this.updateParticles(deltaTime);
+
+            // Check victory condition
+            if (
+              this.level.checkVictory(this.player) &&
+              this.gameState === "playing"
+            ) {
+              this.victory();
+            }
+
+            // Check game over condition
+            if (
+              this.player.y > this.level.height + 100 &&
+              this.gameState === "playing"
+            ) {
+              this.gameOver();
+            }
+          }
+
+          render() {
+            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+            // Save context for camera transformation
+            this.ctx.save();
+            this.ctx.translate(
+              -Math.floor(this.cameraX),
+              -Math.floor(this.cameraY)
+            );
+
+            // Draw background with parallax effect
+            this.level.drawBackground(this.ctx, this.cameraX, this.cameraY);
+
+            // Draw game elements
+            this.level.draw(this.ctx);
+            this.player.draw(this.ctx);
+
+            // Restore context
+            this.ctx.restore();
+          }
+
+          gameLoop(currentTime) {
+            // Calculate delta time
+            const deltaTime = currentTime - this.lastTime;
+            this.lastTime = currentTime;
+
+            // Update and render if game is playing
+            if (this.gameState === "playing") {
+              this.accumulator += deltaTime;
+
+              // Fixed time step for physics
+              while (this.accumulator >= this.timeStep) {
+                this.update(this.timeStep);
+                this.accumulator -= this.timeStep;
+              }
+
+              this.render();
+            }
+
+            // Continue the game loop
+            requestAnimationFrame((time) => this.gameLoop(time));
+          }
+        }
+
+        class Level {
+          constructor(canvasWidth, canvasHeight) {
+            this.width = canvasWidth * 3; // Level is 3 times wider than the canvas
+            this.height = canvasHeight;
+            this.platforms = [];
+            this.enemies = [];
+            this.victoryPole = {
+              x: this.width - 150,
+              y: this.height - 300,
+              width: 10,
+              height: 200,
+              pulsating: 0,
+              glow: 0,
+            };
+
+            // Generate stars for background
+            this.stars = [];
+            for (let i = 0; i < 200; i++) {
+              this.stars.push({
+                x: Math.random() * this.width,
+                y: Math.random() * this.height,
+                size: Math.random() * 2 + 1,
+                opacity: Math.random() * 0.8 + 0.2,
+                pulsating: Math.random() * Math.PI * 2,
+              });
+            }
+
+            // Create platforms with procedural generation
+            this.generateLevel();
+          }
+
+          generateLevel() {
+            // Starting platform
+            this.platforms.push({
+              x: 100,
+              y: this.height - 150,
+              width: 300,
+              height: 30,
+              type: "normal",
+              phase: Math.random() * Math.PI * 2,
+            });
+
+            // Generate main path
+            let currentX = 450;
+            let currentY = this.height - 150;
+
+            while (currentX < this.width - 300) {
+              // Random platform type
+              const platformType = Math.random() < 0.3 ? "moving" : "normal";
+
+              // Random platform dimensions
+              const platformWidth = Math.random() * 100 + 100;
+              const platformHeight = 30;
+
+              // Random position (ensure it's reachable)
+              const gapX = Math.random() * 150 + 50;
+              let gapY = (Math.random() - 0.5) * 100;
+
+              // Ensure level is generally traversable
+              if (currentY + gapY < 150) gapY = 0;
+              if (currentY + gapY > this.height - 100) gapY = -50;
+
+              currentX += gapX;
+              currentY += gapY;
+
+              this.platforms.push({
+                x: currentX,
+                y: currentY,
+                width: platformWidth,
+                height: platformHeight,
+                type: platformType,
+                phase: Math.random() * Math.PI * 2,
+                originalY: currentY,
+              });
+
+              // Add enemies with 40% chance if platform is large enough
+              if (platformWidth > 120 && Math.random() < 0.4) {
+                this.enemies.push({
+                  x: currentX + platformWidth / 2,
+                  y: currentY - 40,
+                  width: 35,
+                  height: 40,
+                  vx: 0,
+                  vy: 0,
+                  state: "idle",
+                  direction: Math.random() < 0.5 ? -1 : 1,
+                  animationFrame: 0,
+                  frameTick: 0,
+                  platformIndex: this.platforms.length - 1,
+                  agitated: false,
+                  jumpCooldown: 0,
+                });
+              }
+            }
+
+            // Final platform for victory pole
+            this.platforms.push({
+              x: this.width - 200,
+              y: this.height - 100,
+              width: 150,
+              height: 30,
+              type: "normal",
+              phase: Math.random() * Math.PI * 2,
+            });
+          }
+
+          update(deltaTime, player) {
+            // Update platforms
+            this.platforms.forEach((platform, index) => {
+              // Make platforms subtly animate
+              platform.phase += 0.01;
+
+              // Moving platforms
+              if (platform.type === "moving") {
+                platform.y = platform.originalY + Math.sin(platform.phase) * 50;
+              }
+            });
+
+            // Update enemies
+            this.enemies.forEach((enemy) => {
+              // Animation timing
+              enemy.frameTick += deltaTime * 0.01;
+              if (enemy.frameTick > 1) {
+                enemy.animationFrame = (enemy.animationFrame + 1) % 4;
+                enemy.frameTick = 0;
+              }
+
+              // Check if player is nearby
+              const distToPlayer = Math.sqrt(
+                Math.pow(player.x - enemy.x, 2) + Math.pow(player.y - enemy.y, 2)
+              );
+
+              // Enemy becomes agitated if player is near
+              if (distToPlayer < 200 && !enemy.agitated) {
+                enemy.agitated = true;
+                enemy.jumpCooldown = Math.random() * 30 + 20;
+              } else if (distToPlayer > 300) {
+                enemy.agitated = false;
+              }
+
+              // Apply gravity
+              enemy.vy += 0.5;
+
+              // Move enemy
+              enemy.x += enemy.vx;
+              enemy.y += enemy.vy;
+
+              // Get associated platform
+              const platform = this.platforms[enemy.platformIndex];
+              if (!platform) return;
+
+              // Stay on platform and bounce at edges
+              if (enemy.agitated) {
+                enemy.jumpCooldown--;
+                if (enemy.jumpCooldown <= 0 && enemy.vy === 0) {
+                  // Jump toward player
+                  enemy.vy = -10;
+                  enemy.vx = player.x > enemy.x ? 2 : -2;
+                  enemy.jumpCooldown = Math.random() * 60 + 30;
+                }
+              } else {
+                // Regular patrolling behavior
+                if (enemy.x < platform.x + 20) {
+                  enemy.direction = 1;
+                  enemy.vx = 1;
+                } else if (enemy.x > platform.x + platform.width - 20) {
+                  enemy.direction = -1;
+                  enemy.vx = -1;
+                }
+
+                // Apply current direction
+                enemy.vx = enemy.direction;
+              }
+
+              // Collision with platform
+              if (
+                enemy.y + enemy.height > platform.y &&
+                enemy.y + enemy.height < platform.y + platform.height &&
+                enemy.x + enemy.width > platform.x &&
+                enemy.x < platform.x + platform.width &&
+                enemy.vy > 0
+              ) {
+                enemy.y = platform.y - enemy.height;
+                enemy.vy = 0;
+              }
+
+              // Keep enemy aligned with moving platform
+              if (platform.type === "moving" && enemy.vy === 0) {
+                enemy.y = platform.y - enemy.height;
+              }
+            });
+
+            // Make victory pole pulsate
+            this.victoryPole.pulsating += 0.05;
+            this.victoryPole.glow =
+              Math.sin(this.victoryPole.pulsating) * 0.5 + 0.5;
+          }
+
+          checkVictory(player) {
+            // Check if player has reached the victory pole
+            return (
+              player.x + player.width > this.victoryPole.x &&
+              player.x < this.victoryPole.x + this.victoryPole.width &&
+              player.y + player.height > this.victoryPole.y &&
+              player.y < this.victoryPole.y + this.victoryPole.height
+            );
+          }
+
+          drawBackground(ctx, cameraX, cameraY) {
+            // Draw space background
+            ctx.fillStyle = "#000000";
+            ctx.fillRect(cameraX, cameraY, this.width, this.height);
+
+            // Draw stars with parallax effect
+            this.stars.forEach((star) => {
+              const parallaxFactor = star.size / 3;
+              const starX = star.x - cameraX * parallaxFactor;
+              const starY = star.y - cameraY * parallaxFactor * 0.2;
+
+              // Wrap stars horizontally
+              const wrappedX = ((starX % this.width) + this.width) % this.width;
+
+              // Draw star
+              ctx.fillStyle = `rgba(255, 255, 255, ${
+                star.opacity * (0.5 + 0.5 * Math.sin((star.pulsating += 0.01)))
+              })`;
+              ctx.beginPath();
+              ctx.arc(wrappedX, starY, star.size, 0, Math.PI * 2);
+              ctx.fill();
+            });
+
+            // Draw a subtle nebula effect
+            const gradient = ctx.createRadialGradient(
+              this.width * 0.7,
+              this.height * 0.3,
+              0,
+              this.width * 0.7,
+              this.height * 0.3,
+              this.height
+            );
+            gradient.addColorStop(0, "rgba(50, 0, 80, 0.5)");
+            gradient.addColorStop(0.5, "rgba(30, 0, 50, 0.2)");
+            gradient.addColorStop(1, "rgba(0, 0, 0, 0)");
+
+            ctx.fillStyle = gradient;
+            ctx.fillRect(cameraX, cameraY, this.width, this.height);
+          }
+
+          draw(ctx) {
+            // Draw platforms
+            this.platforms.forEach((platform) => {
+              // Calculate glow effect
+              const glowIntensity = 0.2 + 0.1 * Math.sin(platform.phase);
+
+              // Draw platform glow
+              ctx.shadowColor =
+                platform.type === "moving"
+                  ? "rgba(0, 255, 200, 0.7)"
+                  : "rgba(0, 150, 255, 0.5)";
+              ctx.shadowBlur = 15;
+
+              // Draw platform
+              const gradient = ctx.createLinearGradient(
+                platform.x,
+                platform.y,
+                platform.x,
+                platform.y + platform.height
+              );
+
+              if (platform.type === "moving") {
+                gradient.addColorStop(
+                  0,
+                  `rgba(0, 255, 200, ${0.7 + glowIntensity})`
+                );
+                gradient.addColorStop(1, "rgba(0, 100, 80, 1)");
+              } else {
+                gradient.addColorStop(
+                  0,
+                  `rgba(0, 150, 255, ${0.7 + glowIntensity})`
+                );
+                gradient.addColorStop(1, "rgba(0, 50, 120, 1)");
+              }
+
+              ctx.fillStyle = gradient;
+              ctx.fillRect(
+                platform.x,
+                platform.y,
+                platform.width,
+                platform.height
+              );
+
+              // Reset shadow
+              ctx.shadowBlur = 0;
+
+              // Add some circuit-like details
+              ctx.strokeStyle =
+                platform.type === "moving"
+                  ? "rgba(0, 255, 200, 0.7)"
+                  : "rgba(0, 150, 255, 0.5)";
+              ctx.lineWidth = 1;
+              ctx.beginPath();
+              ctx.moveTo(platform.x, platform.y + 5);
+              ctx.lineTo(platform.x + platform.width, platform.y + 5);
+              ctx.stroke();
+
+              ctx.beginPath();
+              ctx.moveTo(platform.x + 20, platform.y);
+              ctx.lineTo(platform.x + 20, platform.y + platform.height);
+              ctx.stroke();
+
+              if (platform.width > 70) {
+                ctx.beginPath();
+                ctx.moveTo(platform.x + platform.width - 20, platform.y);
+                ctx.lineTo(
+                  platform.x + platform.width - 20,
+                  platform.y + platform.height
+                );
+                ctx.stroke();
+              }
+            });
+
+            // Draw victory pole
+            ctx.shadowColor = `rgba(255, 215, 0, ${
+              0.7 + this.victoryPole.glow * 0.3
+            })`;
+            ctx.shadowBlur = 20;
+
+            // Draw pole
+            const poleGradient = ctx.createLinearGradient(
+              this.victoryPole.x,
+              this.victoryPole.y,
+              this.victoryPole.x + this.victoryPole.width,
+              this.victoryPole.y
+            );
+            poleGradient.addColorStop(0, "#FFD700");
+            poleGradient.addColorStop(0.5, "#FFF8DC");
+            poleGradient.addColorStop(1, "#FFD700");
+
+            ctx.fillStyle = poleGradient;
+            ctx.fillRect(
+              this.victoryPole.x,
+              this.victoryPole.y,
+              this.victoryPole.width,
+              this.victoryPole.height
+            );
+
+            // Draw orb at top
+            ctx.beginPath();
+            const orbGlow = 10 + this.victoryPole.glow * 5;
+            const orbGradient = ctx.createRadialGradient(
+              this.victoryPole.x + this.victoryPole.width / 2,
+              this.victoryPole.y,
+              0,
+              this.victoryPole.x + this.victoryPole.width / 2,
+              this.victoryPole.y,
+              20
+            );
+            orbGradient.addColorStop(0, "#FFFFFF");
+            orbGradient.addColorStop(0.7, "#FFD700");
+            orbGradient.addColorStop(1, "rgba(255, 215, 0, 0)");
+
+            ctx.fillStyle = orbGradient;
+            ctx.arc(
+              this.victoryPole.x + this.victoryPole.width / 2,
+              this.victoryPole.y,
+              orbGlow,
+              0,
+              Math.PI * 2
+            );
+            ctx.fill();
+			
+
+			// Draw enemies
+			this.enemies.forEach((enemy) => {
+			  // Create a glow effect for the enemy
+			  ctx.shadowColor = "rgba(255, 0, 128, 0.7)";
+			  ctx.shadowBlur = 15;
+			  
+			  // Draw mushroom cap
+			  const capGradient = ctx.createRadialGradient(
+				enemy.x + enemy.width / 2,
+				enemy.y + 10,
+				0,
+				enemy.x + enemy.width / 2,
+				enemy.y + 10,
+				enemy.width / 2
+			  );
+			  
+			  // Purple/pink corrupted mushroom color
+			  capGradient.addColorStop(0, "rgba(255, 0, 255, 0.9)");
+			  capGradient.addColorStop(1, "rgba(128, 0, 128, 1)");
+			  
+			  ctx.fillStyle = capGradient;
+			  ctx.beginPath();
+			  ctx.ellipse(
+				enemy.x + enemy.width / 2,
+				enemy.y + 10,
+				enemy.width / 2,
+				enemy.height / 3,
+				0,
+				0,
+				Math.PI * 2
+			  );
+			  ctx.fill();
+			  
+			  // Draw stem
+			  ctx.fillStyle = "#E0B0FF";
+			  ctx.fillRect(
+				enemy.x + enemy.width / 2 - 5,
+				enemy.y + 10,
+				10,
+				enemy.height - 10
+			  );
+			  
+			  // Draw eyes
+			  ctx.fillStyle = "#FFFFFF";
+			  ctx.beginPath();
+			  ctx.arc(
+				enemy.x + enemy.width / 3,
+				enemy.y + 10,
+				3,
+				0,
+				Math.PI * 2
+			  );
+			  ctx.arc(
+				enemy.x + (enemy.width * 2) / 3,
+				enemy.y + 10,
+				3,
+				0,
+				Math.PI * 2
+			  );
+			  ctx.fill();
+			  
+			  // Draw angry pupils (facing direction of movement)
+			  ctx.fillStyle = "#FF0000";
+			  ctx.beginPath();
+			  ctx.arc(
+				enemy.x + enemy.width / 3 + (enemy.direction * 1),
+				enemy.y + 10,
+				1.5,
+				0,
+				Math.PI * 2
+			  );
+			  ctx.arc(
+				enemy.x + (enemy.width * 2) / 3 + (enemy.direction * 1),
+				enemy.y + 10,
+				1.5,
+				0,
+				Math.PI * 2
+			  );
+			  ctx.fill();
+			  
+			  // Draw glowing particles if enemy is agitated
+			  if (enemy.agitated && Math.random() > 0.7) {
+				if (typeof this.game !== 'undefined' && this.game.spawnParticles) {
+				  this.game.spawnParticles(
+					enemy.x + enemy.width / 2,
+					enemy.y + 5,
+					"#FF00FF",
+					1,
+					10,
+					1,
+					15
+				  );
+				}
+			  }
+			});
+
+			// Reset shadow after drawing all enemies
+			ctx.shadowBlur = 0;
+
+            // Draw energy rings around the pole
+            ctx.strokeStyle = `rgba(255, 215, 0, ${
+              0.3 + this.victoryPole.glow * 0.2
+            })`;
+            ctx.lineWidth = 2;
+
+            for (let i = 0; i < 3; i++) {
+              const ringRadius =
+                30 + i * 20 + Math.sin(this.victoryPole.pulsating + i) * 5;
+              ctx.beginPath();
+              ctx.arc(
+                this.victoryPole.x + this.victoryPole.width / 2,
+                this.victoryPole.y + this.victoryPole.height / 2,
+                ringRadius,
+                0,
+                Math.PI * 2
+              );
+              ctx.stroke();
+            }
+          }
+          checkCollisions(player) {
+              // Check platform collisions
+              let onGround = false;
+
+              this.platforms.forEach(platform => {
+                  if (
+                      player.x + player.width > platform.x &&
+                      player.x < platform.x + platform.width &&
+                      player.y + player.height > platform.y &&
+                      player.y + player.height < platform.y + platform.height &&
+                      player.vy > 0
+                  ) {
+                      player.y = platform.y - player.height;
+                      player.vy = 0;
+                      onGround = true;
+
+                      // If platform is moving, adjust player position with it
+                      if (platform.type === 'moving') {
+                          player.y = platform.y - player.height;
+                      }
+                  }
+              });
+
+              // Check enemy collisions
+              this.enemies.forEach(enemy => {
+                  if (
+                      player.x + player.width > enemy.x &&
+                      player.x < enemy.x + enemy.width &&
+                      player.y + player.height > enemy.y &&
+                      player.y < enemy.y + enemy.height
+                  ) {
+                      // Player is falling onto enemy
+                      if (player.vy > 0 && player.y + player.height < enemy.y + enemy.height / 2) {
+                          // Bounce off enemy
+                          player.vy = -12;
+
+                          // Remove enemy
+                          const index = this.enemies.indexOf(enemy);
+                          if (index !== -1) {
+                              this.enemies.splice(index, 1);
+                          }
+
+                          return;
+                      }
+
+                      // Player hit enemy from side or bottom
+                      player.hurt();
+                  }
+              });
+
+              return onGround;
+          }
+      }
+        // Player class with movement, jumping, and animations
+        class Player {
+          constructor(x, y, game) {
+            this.x = x;
+            this.y = y;
+            this.width = 30;
+            this.height = 50;
+            this.vx = 0;
+            this.vy = 0;
+            this.speed = 5;
+            this.jumpForce = 15;
+            this.direction = 1; // 1: right, -1: left
+            this.state = "idle"; // idle, running, jumping, falling
+            this.game = game;
+
+            this.animationFrame = 0;
+            this.frameTick = 0;
+            this.invulnerable = false;
+            this.invulnerableTime = 0;
+
+            // Player trail effect
+            this.trailTimer = 0;
+            this.trail = [];
+
+            // Jump cooldown
+            this.jumpCooldown = 0;
+          }
+
+          update(deltaTime, input, level) {
+            // Animation timing
+            this.frameTick += deltaTime * 0.01;
+            if (this.frameTick > 1) {
+              this.animationFrame = (this.animationFrame + 1) % 4;
+              this.frameTick = 0;
+            }
+
+            // Apply gravity
+            this.vy += this.game.gravity;
+
+            // Handle input
+            if (input.left) {
+              this.vx = -this.speed;
+              this.direction = -1;
+              if (this.state !== "jumping" && this.state !== "falling") {
+                this.state = "running";
+              }
+            } else if (input.right) {
+              this.vx = this.speed;
+              this.direction = 1;
+              if (this.state !== "jumping" && this.state !== "falling") {
+                this.state = "running";
+              }
+            } else {
+              this.vx = 0;
+              if (this.state !== "jumping" && this.state !== "falling") {
+                this.state = "idle";
+              }
+            }
+
+            // Handle jumping
+            if (
+              input.jump &&
+              this.state !== "jumping" &&
+              this.state !== "falling" &&
+              this.jumpCooldown <= 0
+            ) {
+              this.vy = -this.jumpForce;
+              this.state = "jumping";
+              this.jumpCooldown = 10;
+              this.game.audio.playSound("jump");
+
+              // Create jump particles
+              this.game.spawnParticles(
+                this.x + this.width / 2,
+                this.y + this.height,
+                "#4169E1",
+                10,
+                20,
+                3,
+                30
+              );
+            }
+
+            // Decrease jump cooldown
+            if (this.jumpCooldown > 0) {
+              this.jumpCooldown--;
+            }
+
+            // Apply velocity
+            this.x += this.vx;
+            this.y += this.vy;
+
+            // Check collisions
+            const onGround = level.checkCollisions(this);
+
+            // Update state based on velocity
+            if (this.vy < 0) {
+              this.state = "jumping";
+            } else if (this.vy > 1) {
+              this.state = "falling";
+            } else if (onGround && this.vx === 0) {
+              this.state = "idle";
+            } else if (onGround) {
+              this.state = "running";
+            }
+
+            // Update trail effect
+            this.trailTimer += deltaTime;
+            if (this.trailTimer > 50) {
+              this.trailTimer = 0;
+
+              if (
+                this.state === "running" ||
+                this.state === "jumping" ||
+                this.state === "falling"
+              ) {
+                this.trail.push({
+                  x: this.x,
+                  y: this.y,
+                  width: this.width,
+                  height: this.height,
+                  alpha: 0.7,
+                  color: this.invulnerable ? "#FF6347" : "#4169E1",
+                });
+
+                // Limit trail length
+                if (this.trail.length > 5) {
+                  this.trail.shift();
+                }
+              }
+            }
+
+            // Update trail opacity
+            this.trail.forEach((segment) => {
+              segment.alpha -= 0.02;
+            });
+
+            // Remove faded trail segments
+            this.trail = this.trail.filter((segment) => segment.alpha > 0);
+
+            // Update invulnerability
+            if (this.invulnerable) {
+              this.invulnerableTime -= deltaTime;
+              if (this.invulnerableTime <= 0) {
+                this.invulnerable = false;
+              }
+            }
+
+            // Keep player in bounds
+            if (this.x < 0) this.x = 0;
+            if (this.x + this.width > level.width)
+              this.x = level.width - this.width;
+          }
+
+          hurt() {
+            if (!this.invulnerable) {
+              this.invulnerable = true;
+              this.invulnerableTime = 1500;
+              this.vy = -10; // Bounce back when hurt
+
+              // Create hurt particles
+              this.game.spawnParticles(
+                this.x + this.width / 2,
+                this.y + this.height / 2,
+                "#FF6347",
+                20,
+                30,
+                4,
+                50
+              );
+
+              this.game.audio.playSound("hurt");
+            }
+          }
+
+          draw(ctx) {
+            // Draw trail first (behind player)
+            this.trail.forEach((segment) => {
+              ctx.globalAlpha = segment.alpha;
+              ctx.fillStyle = segment.color;
+
+              // Draw trail silhouette
+              this.drawPlayerShape(ctx, segment.x, segment.y);
+
+              ctx.globalAlpha = 1;
+            });
+
+            // Make player flash when invulnerable
+            if (
+              this.invulnerable &&
+              Math.floor(this.invulnerableTime / 100) % 2 === 0
+            ) {
+              ctx.globalAlpha = 0.5;
+            }
+
+            // Draw player
+            this.drawPlayer(ctx);
+
+            // Reset alpha
+            ctx.globalAlpha = 1;
+          }
+
+          drawPlayerShape(ctx, x, y) {
+            // Draw player body
+            ctx.beginPath();
+            ctx.roundRect(x, y, this.width, this.height, 8);
+            ctx.fill();
+          }
+
+          drawPlayer(ctx) {
+            // Draw quantum aura
+            ctx.shadowColor = this.invulnerable
+              ? "rgba(255, 99, 71, 0.7)"
+              : "rgba(65, 105, 225, 0.7)";
+            ctx.shadowBlur = 10;
+
+            // Draw trail particles for running
+            if (this.state === "running" && Math.random() > 0.7) {
+              this.game.spawnParticles(
+                this.x + this.width / 2,
+                this.y + this.height,
+                "#4169E1",
+                1,
+                5,
+                1,
+                20
+              );
+            }
+
+            // Draw player body (red suit)
+            ctx.fillStyle = "#FF3366";
+            this.drawPlayerShape(ctx, this.x, this.y);
+
+            // Reset shadow
+            ctx.shadowBlur = 0;
+
+            // Draw helmet visor
+            ctx.fillStyle = "#ADD8E6";
+            ctx.beginPath();
+            ctx.roundRect(this.x + 5, this.y + 5, this.width - 10, 15, 5);
+            ctx.fill();
+
+            // Draw belt
+            ctx.fillStyle = "#FFD700";
+            ctx.fillRect(this.x, this.y + this.height / 2 - 2, this.width, 4);
+
+            // Draw legs with animation
+            ctx.fillStyle = "#FF3366";
+
+            // Different leg positions based on animation frame and state
+            if (this.state === "idle") {
+              // Standing position
+              ctx.fillRect(
+                this.x + 5,
+                this.y + this.height / 2 + 5,
+                5,
+                this.height / 2 - 5
+              );
+              ctx.fillRect(
+                this.x + this.width - 10,
+                this.y + this.height / 2 + 5,
+                5,
+                this.height / 2 - 5
+              );
+            } else if (this.state === "running") {
+              // Running animation
+              const legOffset = [5, 10, 5, 0][this.animationFrame];
+
+              // Left leg
+              ctx.fillRect(
+                this.x + 5,
+                this.y + this.height / 2 + 5,
+                5,
+                this.height / 2 - 5 - legOffset
+              );
+
+              // Right leg
+              ctx.fillRect(
+                this.x + this.width - 10,
+                this.y + this.height / 2 + 5,
+                5,
+                this.height / 2 - 5 + legOffset
+              );
+            } else if (this.state === "jumping" || this.state === "falling") {
+              // Jumping position - legs together
+              ctx.fillRect(
+                this.x + 8,
+                this.y + this.height / 2 + 5,
+                5,
+                this.height / 2 - 5
+              );
+              ctx.fillRect(
+                this.x + this.width - 13,
+                this.y + this.height / 2 + 5,
+                5,
+                this.height / 2 - 5
+              );
+            }
+
+            // Draw arms with animation
+            // Different arm positions based on animation frame and state
+            if (this.state === "idle") {
+              // Arms at rest
+              ctx.fillRect(this.x - 2, this.y + 15, 5, this.height / 2 - 10);
+              ctx.fillRect(
+                this.x + this.width - 3,
+                this.y + 15,
+                5,
+                this.height / 2 - 10
+              );
+            } else if (this.state === "running") {
+              // Running animation - arms opposite to legs
+              const armOffset = [10, 0, 10, 5][this.animationFrame];
+
+              // Left arm
+              ctx.fillRect(
+                this.x - 2,
+                this.y + 15 + armOffset,
+                5,
+                this.height / 2 - 10 - armOffset
+              );
+
+              // Right arm
+              ctx.fillRect(
+                this.x + this.width - 3,
+                this.y + 15 - armOffset,
+                5,
+                this.height / 2 - 10 + armOffset
+              );
+            } else if (this.state === "jumping") {
+              // Arms up for jumping
+              ctx.fillRect(this.x - 2, this.y, 5, this.height / 2);
+              ctx.fillRect(this.x + this.width - 3, this.y, 5, this.height / 2);
+            } else if (this.state === "falling") {
+              // Arms out for falling
+              ctx.fillRect(this.x - 5, this.y + 10, 10, 5);
+              ctx.fillRect(this.x + this.width - 5, this.y + 10, 10, 5);
+            }
+          }
+        }
+        // Input manager to handle keyboard controls
+        class InputManager {
+          constructor() {
+            this.keys = {};
+            this.left = false;
+            this.right = false;
+            this.jump = false;
+
+            // Bind event listeners
+            window.addEventListener("keydown", this.keyDown.bind(this));
+            window.addEventListener("keyup", this.keyUp.bind(this));
+
+            // Touch controls for mobile
+            this.setupTouchControls();
+          }
+
+          setupTouchControls() {
+            // Virtual buttons for touch devices
+            const canvas = document.getElementById("game-canvas");
+
+            // Handle touch events for simple left/right/jump
+            canvas.addEventListener("touchstart", (e) => {
+              e.preventDefault();
+              const touch = e.touches[0];
+              const rect = canvas.getBoundingClientRect();
+              const x = touch.clientX - rect.left;
+
+              if (x < rect.width / 3) {
+                this.left = true;
+              } else if (x > (rect.width * 2) / 3) {
+                this.right = true;
+              } else {
+                this.jump = true;
+              }
+            });
+
+            canvas.addEventListener("touchend", (e) => {
+              e.preventDefault();
+              this.left = false;
+              this.right = false;
+              this.jump = false;
+            });
+          }
+
+          keyDown(e) {
+            this.keys[e.key] = true;
+
+            // Update movement state
+            this.left = this.keys["ArrowLeft"] || this.keys["a"];
+            this.right = this.keys["ArrowRight"] || this.keys["d"];
+            this.jump = this.keys["ArrowUp"] || this.keys[" "] || this.keys["w"];
+          }
+
+          keyUp(e) {
+            this.keys[e.key] = false;
+
+            // Update movement state
+            this.left = this.keys["ArrowLeft"] || this.keys["a"];
+            this.right = this.keys["ArrowRight"] || this.keys["d"];
+            this.jump = this.keys["ArrowUp"] || this.keys[" "] || this.keys["w"];
+          }
+        }
+
+        // Audio manager for sound effects and music
+        class AudioManager {
+          constructor() {
+            this.context = null;
+            this.sounds = {};
+            this.music = null;
+            this.muted = false;
+
+            // Initialize Web Audio API
+            this.initAudio();
+          }
+
+          initAudio() {
+            // Create audio context
+            this.context = new (window.AudioContext ||
+              window.webkitAudioContext)();
+
+            // Create sounds
+            this.createSounds();
+
+            // Create background music
+            this.createMusic();
+          }
+
+          createSounds() {
+            // Jump sound
+            this.sounds.jump = this.createSound((ctx) => {
+              const oscillator = ctx.createOscillator();
+              oscillator.type = "sine";
+              oscillator.frequency.setValueAtTime(300, ctx.currentTime);
+              oscillator.frequency.exponentialRampToValueAtTime(
+                1500,
+                ctx.currentTime + 0.2
+              );
+              return oscillator;
+            }, 0.2);
+
+            // Hurt sound
+            this.sounds.hurt = this.createSound((ctx) => {
+              const oscillator = ctx.createOscillator();
+              oscillator.type = "sawtooth";
+              oscillator.frequency.setValueAtTime(200, ctx.currentTime);
+              oscillator.frequency.exponentialRampToValueAtTime(
+                100,
+                ctx.currentTime + 0.3
+              );
+              return oscillator;
+            }, 0.3);
+
+            // Game over sound
+            this.sounds.gameOver = this.createSound((ctx) => {
+              const oscillator = ctx.createOscillator();
+              oscillator.type = "sawtooth";
+              oscillator.frequency.setValueAtTime(300, ctx.currentTime);
+              oscillator.frequency.exponentialRampToValueAtTime(
+                50,
+                ctx.currentTime + 1
+              );
+              return oscillator;
+            }, 1);
+
+            // Victory sound
+            this.sounds.victory = this.createSound((ctx) => {
+              const oscillator = ctx.createOscillator();
+              oscillator.type = "sine";
+
+              // Play a victory arpeggio
+              const now = ctx.currentTime;
+              oscillator.frequency.setValueAtTime(440, now);
+              oscillator.frequency.setValueAtTime(550, now + 0.1);
+              oscillator.frequency.setValueAtTime(660, now + 0.2);
+              oscillator.frequency.setValueAtTime(880, now + 0.3);
+              oscillator.frequency.setValueAtTime(660, now + 0.4);
+              oscillator.frequency.setValueAtTime(880, now + 0.5);
+              oscillator.frequency.setValueAtTime(1320, now + 0.6);
+
+              return oscillator;
+            }, 0.7);
+          }
+
+          createSound(oscillatorFactory, duration) {
+            return () => {
+              if (this.muted) return;
+
+              // Create nodes
+              const oscillator = oscillatorFactory(this.context);
+              const gainNode = this.context.createGain();
+
+              // Connect nodes
+              oscillator.connect(gainNode);
+              gainNode.connect(this.context.destination);
+
+              // Set envelope
+              gainNode.gain.setValueAtTime(0.3, this.context.currentTime);
+              gainNode.gain.exponentialRampToValueAtTime(
+                0.01,
+                this.context.currentTime + duration
+              );
+
+              // Play sound
+              oscillator.start();
+              oscillator.stop(this.context.currentTime + duration);
+            };
+          }
+
+          createMusic() {
+            // Create a simple procedural music generator
+            this.music = {
+              playing: false,
+              notes: [
+                { freq: 330, duration: 0.5 }, // E
+                { freq: 349, duration: 0.5 }, // F
+                { freq: 392, duration: 0.5 }, // G
+                { freq: 440, duration: 0.5 }, // A
+                { freq: 494, duration: 0.5 }, // B
+                { freq: 440, duration: 0.5 }, // A
+                { freq: 392, duration: 0.5 }, // G
+                { freq: 349, duration: 0.5 }, // F
+              ],
+              bassNotes: [
+                { freq: 165, duration: 2 }, // E
+                { freq: 196, duration: 2 }, // G
+                { freq: 147, duration: 2 }, // D
+                { freq: 165, duration: 2 }, // E
+              ],
+              currentNote: 0,
+              currentBassNote: 0,
+              nextNoteTime: 0,
+              nextBassNoteTime: 0,
+            };
+          }
+
+          playMusic() {
+            if (this.muted || this.music.playing) return;
+
+            this.music.playing = true;
+            this.music.currentNote = 0;
+            this.music.currentBassNote = 0;
+            this.music.nextNoteTime = this.context.currentTime;
+            this.music.nextBassNoteTime = this.context.currentTime;
+
+            // Schedule melody
+            this.scheduleMelodyNote();
+
+            // Schedule bass
+            this.scheduleBassNote();
+          }
+
+          scheduleMelodyNote() {
+            if (!this.music.playing || this.muted) return;
+
+            const note = this.music.notes[this.music.currentNote];
+
+            // Create oscillator for melody
+            const oscillator = this.context.createOscillator();
+            oscillator.type = "sine";
+            oscillator.frequency.value = note.freq;
+
+            // Create gain node for volume
+            const gainNode = this.context.createGain();
+            gainNode.gain.setValueAtTime(0.2, this.music.nextNoteTime);
+            gainNode.gain.exponentialRampToValueAtTime(
+              0.01,
+              this.music.nextNoteTime + note.duration * 0.9
+            );
+
+            // Connect nodes
+            oscillator.connect(gainNode);
+            gainNode.connect(this.context.destination);
+
+            // Play note
+            oscillator.start(this.music.nextNoteTime);
+            oscillator.stop(this.music.nextNoteTime + note.duration);
+
+            // Schedule next note
+            this.music.nextNoteTime += note.duration;
+            this.music.currentNote =
+              (this.music.currentNote + 1) % this.music.notes.length;
+
+            // Schedule next note
+            setTimeout(() => {
+              this.scheduleMelodyNote();
+            }, note.duration * 1000);
+          }
+
+          scheduleBassNote() {
+            if (!this.music.playing || this.muted) return;
+
+            const note = this.music.bassNotes[this.music.currentBassNote];
+
+            // Create oscillator for bass
+            const oscillator = this.context.createOscillator();
+            oscillator.type = "triangle";
+            oscillator.frequency.value = note.freq;
+
+            // Create gain node for volume
+            const gainNode = this.context.createGain();
+            gainNode.gain.setValueAtTime(0.3, this.music.nextBassNoteTime);
+            gainNode.gain.exponentialRampToValueAtTime(
+              0.05,
+              this.music.nextBassNoteTime + note.duration * 0.9
+            );
+
+            // Connect nodes
+            oscillator.connect(gainNode);
+            gainNode.connect(this.context.destination);
+
+            // Play note
+            oscillator.start(this.music.nextBassNoteTime);
+            oscillator.stop(this.music.nextBassNoteTime + note.duration);
+
+            // Schedule next note
+            this.music.nextBassNoteTime += note.duration;
+            this.music.currentBassNote =
+              (this.music.currentBassNote + 1) % this.music.bassNotes.length;
+
+            // Schedule next note
+            setTimeout(() => {
+              this.scheduleBassNote();
+            }, note.duration * 1000);
+          }
+
+          playSound(soundName) {
+            if (this.sounds[soundName]) {
+              this.sounds[soundName]();
+            }
+          }
+
+          toggleMute() {
+            this.muted = !this.muted;
+
+            if (this.muted) {
+              this.music.playing = false;
+            } else {
+              this.playMusic();
+            }
+          }
+        }
+
+        // Start the game when the DOM is loaded
+        document.addEventListener("DOMContentLoaded", () => {
+          const game = new QuantumPlatformer();
+        });
+    </script>
+  </body>
+</html>
