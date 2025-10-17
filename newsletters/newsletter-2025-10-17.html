@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>I Just Do Things - Weekly Newsletter</title>
+            <style>
+/* From extension vscode.github */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+.vscode-dark img[src$=\#gh-light-mode-only],
+.vscode-light img[src$=\#gh-dark-mode-only],
+.vscode-high-contrast:not(.vscode-high-contrast-light) img[src$=\#gh-light-mode-only],
+.vscode-high-contrast-light img[src$=\#gh-dark-mode-only] {
+	display: none;
+}
+
+/* From extension foam.foam-vscode */
+.foam-placeholder-link {
+  color: var(--vscode-editorWarning-foreground);
+  cursor: default;
+}
+
+.foam-note-link,
+.foam-attachment-link {
+  color: var(--vscode-textLink-foreground);
+}
+
+.foam-tag {
+  color: var(--vscode-editorLineNumber-foreground);
+}
+
+.foam-cyclic-link-warning {
+  border: 1px solid var(--vscode-editorWarning-foreground);
+  background-color: var(--vscode-editorError-background);
+  color: var(--vscode-editorError-foreground);
+  padding: 0.5em;
+}
+
+.foam-cyclic-link-warning__stack {
+  color: var(--vscode-editorWarning-foreground);
+}
+
+.foam-embed-not-supported-warning {
+  border: 1px solid var(--vscode-editorWarning-foreground);
+  background-color: var(--vscode-editorError-background);
+  color: var(--vscode-editorWarning-foreground);
+  padding: 0.5em;
+}
+
+.embed-container-note {
+  padding: 0.5em;
+  margin: 1.5em 0;
+  border: 1px solid var(--vscode-editorLineNumber-foreground);
+}
+
+.embed-container-attachment {
+  padding: 0.25em;
+  margin: 1.5em 0;
+  text-align: center;
+  border: 1px solid var(--vscode-editorLineNumber-foreground);
+}
+
+.embed-container-image {
+  margin: auto;
+  padding: 0.25em;
+  text-align: center;
+}
+
+</style>
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex/dist/katex.min.css">
+<link href="https://cdn.jsdelivr.net/npm/katex-copytex@latest/dist/katex-copytex.min.css" rel="stylesheet" type="text/css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/markdown.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+<style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe WPC', 'Segoe UI', system-ui, 'Ubuntu', 'Droid Sans', sans-serif;
+                font-size: 14px;
+                line-height: 1.6;
+            }
+        </style>
+        <style>
+.task-list-item {
+    list-style-type: none;
+}
+
+.task-list-item-checkbox {
+    margin-left: -20px;
+    vertical-align: middle;
+    pointer-events: none;
+}
+</style>
+<style>
+:root {
+  --color-note: #0969da;
+  --color-tip: #1a7f37;
+  --color-warning: #9a6700;
+  --color-severe: #bc4c00;
+  --color-caution: #d1242f;
+  --color-important: #8250df;
+}
+
+</style>
+<style>
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-note: #2f81f7;
+    --color-tip: #3fb950;
+    --color-warning: #d29922;
+    --color-severe: #db6d28;
+    --color-caution: #f85149;
+    --color-important: #a371f7;
+  }
+}
+
+</style>
+<style>
+.markdown-alert {
+  padding: 0.5rem 1rem;
+  margin-bottom: 16px;
+  color: inherit;
+  border-left: .25em solid #888;
+}
+
+.markdown-alert>:first-child {
+  margin-top: 0
+}
+
+.markdown-alert>:last-child {
+  margin-bottom: 0
+}
+
+.markdown-alert .markdown-alert-title {
+  display: flex;
+  font-weight: 500;
+  align-items: center;
+  line-height: 1
+}
+
+.markdown-alert .markdown-alert-title .octicon {
+  margin-right: 0.5rem;
+  display: inline-block;
+  overflow: visible !important;
+  vertical-align: text-bottom;
+  fill: currentColor;
+}
+
+.markdown-alert.markdown-alert-note {
+  border-left-color: var(--color-note);
+}
+
+.markdown-alert.markdown-alert-note .markdown-alert-title {
+  color: var(--color-note);
+}
+
+.markdown-alert.markdown-alert-important {
+  border-left-color: var(--color-important);
+}
+
+.markdown-alert.markdown-alert-important .markdown-alert-title {
+  color: var(--color-important);
+}
+
+.markdown-alert.markdown-alert-warning {
+  border-left-color: var(--color-warning);
+}
+
+.markdown-alert.markdown-alert-warning .markdown-alert-title {
+  color: var(--color-warning);
+}
+
+.markdown-alert.markdown-alert-tip {
+  border-left-color: var(--color-tip);
+}
+
+.markdown-alert.markdown-alert-tip .markdown-alert-title {
+  color: var(--color-tip);
+}
+
+.markdown-alert.markdown-alert-caution {
+  border-left-color: var(--color-caution);
+}
+
+.markdown-alert.markdown-alert-caution .markdown-alert-title {
+  color: var(--color-caution);
+}
+
+</style>
+        
+        </head>
+        <body class="vscode-body vscode-light">
+            <h1 id="i-just-do-things---weekly-newsletter">I Just Do Things - Weekly Newsletter</h1>
+<p><strong>Week of October 12-17, 2025</strong> | Time to read: 10 mins</p>
+<p><em>By Nathaniel Evry | AI Researcher, Systems Architect, Problem Solver</em></p>
+<hr>
+<h2 id="this-week-in-my-world">This Week in My World</h2>
+<p>It's been an absolutely wild week. Let me catch you up:</p>
+<p><strong>NASA Patent Remix Challenge</strong> - I jumped head-first into the NASA Patent Remix Challenge! They held their first webinar yesterday: &quot;From Space to Startup: Turning NASA Patents into Business Opportunities.&quot; This is exactly the kind of thing I live for. The literal goal of the challenge is to take proven technology, find new applications, and learn how to use the NASA patents resources. Competition runs until December 15th, winners announced January 30th. More on this below.</p>
+<p><strong>Tron: Ares</strong> - Holy. Crap. If you're in AI, you need to see this movie. They're using quotes from AI TODAY. &quot;I exist, because we are here together.&quot; The Nine Inch Nails soundtrack by Trent Reznor is dripping with meaning and symbolism. The ONLY two unrealistic things I found in the movie:</p>
+<ol>
+<li>The light-trails would require energy density that would form black holes</li>
+<li>Government officials actually wearing their laser safety glasses during a demonstration.</li>
+</ol>
+<p>Everything else? Unsettlingly plausible.</p>
+<p><strong>Health Reality Check</strong> - Turns out Dollar Tree doesn't just sell things for <s>$1</s> <s>$1.25</s> $1.50; apparently they peddle high blood pressure too! I saw a doc Monday, now on BP meds. Last day at Dollar Tree is 10/18. A full write-up on &quot;how to survive, thrive, and fall in love with any job&quot; coming soon. I genuinely will miss it.</p>
+<p><strong>Government Shutdown Drama</strong> - The US government shut down but is somehow still executing functions like firing thousands of workers. They're TSA though... so are we really losing anything? (I kid, I kid... mostly.)</p>
+<hr>
+<h2 id="links-that-matter-this-week">Links That Matter This Week</h2>
+<h4 id="anthropic-skills-repository"><a href="https://github.com/anthropics/skills">Anthropic Skills Repository</a></h4>
+<p>Anthropic's Skills are &quot;folders of instructions, scripts, and resources that Claude loads dynamically to improve performance on specialized tasks.&quot;</p>
+<h4 id="karpathys-nanochat"><a href="https://github.com/karpathy/nanochat">Karpathy's NanoChat</a></h4>
+<p>Andrej Karpathy built a complete LLM training pipeline (tokenization → pretraining → fine-tuning → inference → web UI) that runs on a single 8-GPU node in 4 hours. And the GOAT drops it on GitHub for free.</p>
+<h4 id="vjepa2-siml-fepgate-research"><a href="https://www.siml.life/research/VJEPA2-siml-fepgate">VJEPA2-siml-fepgate Research</a></h4>
+<p>SIML: &quot;The Cognitive OS for Embodied AI.&quot; By adding a one-bit surprise gate to Meta's V-JEPA 2, they achieved 50% error reduction. 2x faster decisions, 2x lower energy use = 4x better energy-delay product from a minimal modification. This stands to be a groundbreaking methodology shift for robots and embodied agents. Edge intelligence is getting REAL.</p>
+<h4 id="refrag-rethinking-rag-based-decoding-arxiv-paper"><a href="https://arxiv.org/abs/2509.01092">REFRAG: Rethinking RAG-based Decoding</a> (arXiv Paper)</h4>
+<p>REFRAG claims to attack latency head-on with a &quot;compress, sense, and expand&quot; framework that achieves a measured 30.85x speedup on time-to-first-token while maintaining quality. That's three orders of magnitude shift. This is another game-changer (what, is it every 70 hours or so now?). Potential to be directly applied <em>today</em> to save time, money, and aspirin.</p>
+<h4 id="agentic-entropy-balanced-policy-optimization-arxiv-paper"><a href="https://arxiv.org/abs/2510.14545">Agentic Entropy-Balanced Policy Optimization</a> (arXiv Paper)</h4>
+<p>Agentic RL is exciting and powerful but fragile. Entropy-driven exploration causes training collapse. This paper outlines an adaptive rollout and balanced optimization technique. The short: Qwen3-14B hits 47.6% on GAIA benchmarks using minimal training data. Even more stable agent training, better tool use, less babysitting your models.</p>
+<h4 id="rag-anything-all-in-one-rag-framework-arxiv-paper"><a href="https://arxiv.org/abs/2510.12323">RAG-Anything: All-in-One RAG Framework</a> (arXiv Paper)</h4>
+<p>Current RAG is often text-only in our omni-media world. RAG-Anything looks at viewing all data as interconnected knowledge entities.</p>
+<hr>
+<h3 id="for-fun-and-learning">For Fun and Learning</h3>
+<h4 id="anthropics-prompt-engineering-interactive-tutorial"><a href="https://github.com/anthropics/prompt-eng-interactive-tutorial">Anthropic's Prompt Engineering Interactive Tutorial</a></h4>
+<p>An excellent interactive guide covering nine chapters from basics to advanced techniques (hallucination prevention, industry applications, prompt chaining). Each has hands-on exercises.</p>
+<h4 id="just-talk-to-it---peter-steinbergers-agentic-engineering-guide"><a href="https://steipete.me/posts/just-talk-to-it">Just Talk To It - Peter Steinberger's Agentic Engineering Guide</a></h4>
+<p>Steinberger argues that elaborate RAG systems, subagents, and complex frameworks are mostly theater. His approach: have clear conversations with your AI agents, use screenshots 50% of the time, run 3-8 agents in parallel terminal windows, and skip the ceremony. He ships features iteratively with UI-based development rather than spec-driven planning. &lt;3</p>
+<h3 id="science-news">Science News</h3>
+<h4 id="oxford-physicists-achieve-quantum-teleportation"><a href="https://www.thebrighterside.news/post/oxford-physicists-achieve-teleportation-between-two-quantum-supercomputers/">Oxford Physicists Achieve Quantum Teleportation</a></h4>
+<p>Oxford linked two quantum computers via light and ran Grover's algorithm across them at 71% accuracy. This is one of the first repeatable experiments showing reliable quantum networking (it's only a model).</p>
+<hr>
+<h2 id="things-you-might-have-missed-last-week">Things You Might Have Missed Last Week</h2>
+<h3 id="tinyrecursivemodels"><a href="https://github.com/SamsungSAILMontreal/TinyRecursiveModels">TinyRecursiveModels</a></h3>
+<p>This is an antidote to &quot;bigger is better.&quot; Samsung Research found that a 7-million-parameter model can achieve strong reasoning through recursive refinement. FRACTALS. Just, more, actual, thinking. They hit <strong>45%</strong> accuracy on ARC-AGI-1 with a model that can be run offline!</p>
+<hr>
+<p>Stay curious, strange, and joyous.</p>
+<p>Nathaniel Evry | <strong>I Just Do Things.</strong></p>
+<hr>
+<p><em>Want more like this? I've got a stack of business cards up to my shin waiting to answer that question. Let me know if you want to hear from me weekly. I'm figuring out where/when/how this newsletter will live</em></p>
+<p><strong>Find me:</strong> <a href="https://ijustdothings.com">ijustdothings.com</a> | <a href="https://linkedin.com/in/nathanielevry">LinkedIn</a></p>
+
+            <script async src="https://cdn.jsdelivr.net/npm/katex-copytex@latest/dist/katex-copytex.min.js"></script>
+            
+        </body>
+        </html>
