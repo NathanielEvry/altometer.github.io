@@ -1,0 +1,91 @@
+# I Just Do Things - Weekly Newsletter
+**Week of October 12-17, 2025** | Time to read: 10 mins
+
+*By Nathaniel Evry | AI Researcher, Systems Architect, Problem Solver*
+
+---
+
+## This Week in My World
+
+It's been an absolutely wild week. Let me catch you up:
+
+**NASA Patent Remix Challenge** - I jumped head-first into the NASA Patent Remix Challenge! They held their first webinar yesterday: "From Space to Startup: Turning NASA Patents into Business Opportunities." This is exactly the kind of thing I live for. The literal goal of the challenge is to take proven technology, find new applications, and learn how to use the NASA patents resources. Competition runs until December 15th, winners announced January 30th. More on this below.
+
+**Tron: Ares** - Holy. Crap. If you're in AI, you need to see this movie. They're using quotes from AI TODAY. "I exist, because we are here together." The Nine Inch Nails soundtrack by Trent Reznor is dripping with meaning and symbolism. The ONLY two unrealistic things I found in the movie:
+1. The light-trails would require energy density that would form black holes 
+2. Government officials actually wearing their laser safety glasses during a demonstration. 
+
+Everything else? Unsettlingly plausible.
+
+**Health Reality Check** - Turns out Dollar Tree doesn't just sell things for ~~$1~~ ~~$1.25~~ $1.50; apparently they peddle high blood pressure too! I saw a doc Monday, now on BP meds. Last day at Dollar Tree is 10/18. A full write-up on "how to survive, thrive, and fall in love with any job" coming soon. I genuinely will miss it.
+
+**Government Shutdown Drama** - The US government shut down but is somehow still executing functions like firing thousands of workers. They're TSA though... so are we really losing anything? (I kid, I kid... mostly.)
+
+---
+
+## Links That Matter This Week
+
+#### [Anthropic Skills Repository](https://github.com/anthropics/skills)
+
+Anthropic's Skills are "folders of instructions, scripts, and resources that Claude loads dynamically to improve performance on specialized tasks."
+
+#### [Karpathy's NanoChat](https://github.com/karpathy/nanochat)
+
+Andrej Karpathy built a complete LLM training pipeline (tokenization → pretraining → fine-tuning → inference → web UI) that runs on a single 8-GPU node in 4 hours. And the GOAT drops it on GitHub for free.
+
+#### [VJEPA2-siml-fepgate Research](https://www.siml.life/research/VJEPA2-siml-fepgate)
+
+SIML: "The Cognitive OS for Embodied AI." By adding a one-bit surprise gate to Meta's V-JEPA 2, they achieved 50% error reduction. 2x faster decisions, 2x lower energy use = 4x better energy-delay product from a minimal modification. This stands to be a groundbreaking methodology shift for robots and embodied agents. Edge intelligence is getting REAL.
+
+#### [REFRAG: Rethinking RAG-based Decoding](https://arxiv.org/abs/2509.01092) (arXiv Paper)
+
+REFRAG claims to attack latency head-on with a "compress, sense, and expand" framework that achieves a measured 30.85x speedup on time-to-first-token while maintaining quality. That's three orders of magnitude shift. This is another game-changer (what, is it every 70 hours or so now?). Potential to be directly applied *today* to save time, money, and aspirin.
+
+
+#### [Agentic Entropy-Balanced Policy Optimization](https://arxiv.org/abs/2510.14545) (arXiv Paper)
+
+Agentic RL is exciting and powerful but fragile. Entropy-driven exploration causes training collapse. This paper outlines an adaptive rollout and balanced optimization technique. The short: Qwen3-14B hits 47.6% on GAIA benchmarks using minimal training data. Even more stable agent training, better tool use, less babysitting your models.
+
+#### [RAG-Anything: All-in-One RAG Framework](https://arxiv.org/abs/2510.12323) (arXiv Paper)
+
+Current RAG is often text-only in our omni-media world. RAG-Anything looks at viewing all data as interconnected knowledge entities.
+
+---
+
+### For Fun and Learning
+
+#### [Anthropic's Prompt Engineering Interactive Tutorial](https://github.com/anthropics/prompt-eng-interactive-tutorial)
+
+An excellent interactive guide covering nine chapters from basics to advanced techniques (hallucination prevention, industry applications, prompt chaining). Each has hands-on exercises.
+
+
+#### [Just Talk To It - Peter Steinberger's Agentic Engineering Guide](https://steipete.me/posts/just-talk-to-it)
+
+Steinberger argues that elaborate RAG systems, subagents, and complex frameworks are mostly theater. His approach: have clear conversations with your AI agents, use screenshots 50% of the time, run 3-8 agents in parallel terminal windows, and skip the ceremony. He ships features iteratively with UI-based development rather than spec-driven planning. <3 
+
+
+### Science News
+
+#### [Oxford Physicists Achieve Quantum Teleportation](https://www.thebrighterside.news/post/oxford-physicists-achieve-teleportation-between-two-quantum-supercomputers/)
+
+Oxford linked two quantum computers via light and ran Grover's algorithm across them at 71% accuracy. This is one of the first repeatable experiments showing reliable quantum networking (it's only a model).
+
+---
+
+## Things You Might Have Missed Last Week
+
+### [TinyRecursiveModels](https://github.com/SamsungSAILMontreal/TinyRecursiveModels)
+
+This is an antidote to "bigger is better." Samsung Research found that a 7-million-parameter model can achieve strong reasoning through recursive refinement. FRACTALS. Just, more, actual, thinking. They hit **45%** accuracy on ARC-AGI-1 with a model that can be run offline!
+
+---
+
+Stay curious, strange, and joyous.
+
+Nathaniel Evry | **I Just Do Things.**
+
+---
+
+*Want more like this? I've got a stack of business cards up to my shin waiting to answer that question. Let me know if you want to hear from me weekly. I'm figuring out where/when/how this newsletter will live*
+
+**Find me:** [ijustdothings.com](https://ijustdothings.com) | [LinkedIn](https://linkedin.com/in/nathanielevry)
