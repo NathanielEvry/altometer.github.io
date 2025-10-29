@@ -166,22 +166,6 @@
       image-rendering: crisp-edges;
     }
 
-    .starfield-info {
-      position: fixed;
-      bottom: 10px;
-      left: 10px;
-      color: var(--accent);
-      font-size: 10px;
-      opacity: 0.4;
-      z-index: 1;
-      transition: opacity 0.3s;
-      font-family: 'Courier New', monospace;
-    }
-
-    .starfield-info:hover {
-      opacity: 0.8;
-    }
-
     /* Interactive Starfield Section */
     .interactive-starfield {
       position: relative;
@@ -235,6 +219,31 @@
       text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
     }
 
+    /* Scroll Hint */
+    .scroll-hint {
+      position: fixed;
+      top: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: 'Courier New', monospace;
+      font-size: 0.85rem;
+      color: var(--accent);
+      opacity: 0.6;
+      z-index: 10;
+      animation: bounce 2s ease-in-out infinite;
+      transition: opacity 0.3s;
+      pointer-events: none;
+    }
+
+    .scroll-hint.hidden {
+      opacity: 0;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50% { transform: translateX(-50%) translateY(-10px); }
+    }
+
     /* Back to Top Button */
     .back-to-top {
       position: fixed;
@@ -272,7 +281,6 @@
 <body>
 
   <canvas id="starfield-canvas"></canvas>
-  <div class="starfield-info">CELLULAR STARFIELD • CLICK & DRAG TO PAINT STARS</div>
 
   <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">☾/☼</button>
 
@@ -367,6 +375,11 @@
     ijustdothings.com &copy; 2025
   </footer>
 
+  <!-- Scroll Hint -->
+  <div class="scroll-hint" id="scrollHint">
+    Hey, pssst... Try scrolling all the way down ↓
+  </div>
+
   <!-- Interactive Starfield Section -->
   <section class="interactive-starfield" id="interactive-section">
     <canvas id="interactive-canvas"></canvas>
@@ -429,14 +442,23 @@
       });
     }
 
-    // === BACK TO TOP BUTTON ===
+    // === BACK TO TOP BUTTON & SCROLL HINT ===
     const backToTopBtn = document.getElementById('backToTop');
+    const scrollHint = document.getElementById('scrollHint');
     const interactiveSection = document.getElementById('interactive-section');
 
-    // Show/hide back-to-top button based on scroll position
+    // Show/hide back-to-top button and scroll hint based on scroll position
     window.addEventListener('scroll', () => {
       const interactiveSectionTop = interactiveSection.offsetTop;
       const scrollPosition = window.scrollY + window.innerHeight;
+      const pageScrolled = window.scrollY;
+
+      // Hide scroll hint after scrolling down a bit
+      if (pageScrolled > 300) {
+        scrollHint.classList.add('hidden');
+      } else {
+        scrollHint.classList.remove('hidden');
+      }
 
       // Show button when user scrolls into the interactive section
       if (scrollPosition >= interactiveSectionTop + 200) {
