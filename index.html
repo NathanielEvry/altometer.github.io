@@ -153,11 +153,126 @@
       color: white;
     }
 
+    /* Starfield Canvas */
+    #starfield-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      image-rendering: pixelated;
+      image-rendering: -moz-crisp-edges;
+      image-rendering: crisp-edges;
+    }
+
+    .starfield-info {
+      position: fixed;
+      bottom: 10px;
+      left: 10px;
+      color: var(--accent);
+      font-size: 10px;
+      opacity: 0.4;
+      z-index: 1;
+      transition: opacity 0.3s;
+      font-family: 'Courier New', monospace;
+    }
+
+    .starfield-info:hover {
+      opacity: 0.8;
+    }
+
+    /* Interactive Starfield Section */
+    .interactive-starfield {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      min-height: 600px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #interactive-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      image-rendering: pixelated;
+      image-rendering: -moz-crisp-edges;
+      image-rendering: crisp-edges;
+      cursor: crosshair;
+    }
+
+    .interactive-overlay {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      color: var(--accent);
+      pointer-events: none;
+      padding: 2rem;
+    }
+
+    .interactive-overlay h2 {
+      font-size: clamp(1.5rem, 4vw, 3rem);
+      margin-bottom: 1rem;
+      text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    }
+
+    body.dark-mode .interactive-overlay h2 {
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+    }
+
+    .interactive-overlay p {
+      font-size: clamp(0.9rem, 2vw, 1.1rem);
+      font-family: 'Courier New', monospace;
+      text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+    }
+
+    body.dark-mode .interactive-overlay p {
+      text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+    }
+
+    /* Back to Top Button */
+    .back-to-top {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      font-size: 1.5rem;
+      cursor: pointer;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+      z-index: 100;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .back-to-top.visible {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .back-to-top:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 6px 16px rgba(153, 0, 0, 0.4);
+    }
+
     /* Easter eggs */
     /* <!-- You found me, hello dreamer --> */
   </style>
 </head>
 <body>
+
+  <canvas id="starfield-canvas"></canvas>
+  <div class="starfield-info">CELLULAR STARFIELD • CLICK & DRAG TO PAINT STARS</div>
 
   <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">☾/☼</button>
 
@@ -252,6 +367,18 @@
     ijustdothings.com &copy; 2025
   </footer>
 
+  <!-- Interactive Starfield Section -->
+  <section class="interactive-starfield" id="interactive-section">
+    <canvas id="interactive-canvas"></canvas>
+    <div class="interactive-overlay">
+      <h2>✨ Cellular Starfield ✨</h2>
+      <p>Click & drag to paint stars • Watch them evolve</p>
+    </div>
+  </section>
+
+  <!-- Back to Top Button -->
+  <button class="back-to-top" id="backToTop" aria-label="Back to top">↑</button>
+
   <script>
     // Initialize theme based on system preference, but default to light
     function initTheme() {
@@ -272,13 +399,16 @@
 
     function toggleTheme() {
       document.body.classList.toggle('dark-mode');
-      
+
       // Save preference
       if (document.body.classList.contains('dark-mode')) {
         localStorage.setItem('theme', 'dark');
       } else {
         localStorage.setItem('theme', 'light');
       }
+
+      // Update starfield colors
+      updateStarfieldTheme();
     }
 
     // Initialize on page load
@@ -294,9 +424,342 @@
           } else {
             document.body.classList.remove('dark-mode');
           }
+          updateStarfieldTheme();
         }
       });
     }
+
+    // === BACK TO TOP BUTTON ===
+    const backToTopBtn = document.getElementById('backToTop');
+    const interactiveSection = document.getElementById('interactive-section');
+
+    // Show/hide back-to-top button based on scroll position
+    window.addEventListener('scroll', () => {
+      const interactiveSectionTop = interactiveSection.offsetTop;
+      const scrollPosition = window.scrollY + window.innerHeight;
+
+      // Show button when user scrolls into the interactive section
+      if (scrollPosition >= interactiveSectionTop + 200) {
+        backToTopBtn.classList.add('visible');
+      } else {
+        backToTopBtn.classList.remove('visible');
+      }
+    });
+
+    // Smooth scroll to top
+    backToTopBtn.addEventListener('click', () => {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    });
+
+    // === STARFIELD SYSTEM ===
+    const GRID_SIZE = 4;
+
+    // Theme-aware colors
+    let bgColor = '#ffffff';
+    let starColor = '#333333';
+
+    // Audio setup
+    let audioContext;
+    let isAudioEnabled = false;
+
+    function initAudio() {
+      if (!isAudioEnabled) {
+        try {
+          audioContext = new (window.AudioContext || window.webkitAudioContext)();
+          isAudioEnabled = true;
+        } catch (e) {}
+      }
+    }
+
+    function beep(freq = 800, duration = 0.1, vol = 0.015) {
+      if (!isAudioEnabled) return;
+
+      const osc = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+
+      osc.connect(gain);
+      gain.connect(audioContext.destination);
+
+      osc.frequency.value = freq;
+      osc.type = 'square';
+
+      gain.gain.setValueAtTime(0, audioContext.currentTime);
+      gain.gain.linearRampToValueAtTime(vol, audioContext.currentTime + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+
+      osc.start();
+      osc.stop(audioContext.currentTime + duration);
+    }
+
+    function updateStarfieldTheme() {
+      const isDarkMode = document.body.classList.contains('dark-mode');
+      if (isDarkMode) {
+        bgColor = '#111111';
+        starColor = '#f0f0f0';
+      } else {
+        bgColor = '#ffffff';
+        starColor = '#333333';
+      }
+    }
+
+    // Factory function to create starfield instances
+    function createStarfield(canvas, interactive = false) {
+      const ctx = canvas.getContext('2d');
+      let cols, rows;
+      let grid, nextGrid;
+      let mouseX = 0, mouseY = 0;
+      let frame = 0;
+      let isDragging = false;
+      let lastDrawX = -1, lastDrawY = -1;
+
+      function resize() {
+        if (interactive) {
+          canvas.width = canvas.parentElement.clientWidth;
+          canvas.height = canvas.parentElement.clientHeight;
+        } else {
+          canvas.width = window.innerWidth;
+          canvas.height = window.innerHeight;
+        }
+
+        cols = Math.floor(canvas.width / GRID_SIZE);
+        rows = Math.floor(canvas.height / GRID_SIZE);
+
+        // Initialize grids
+        grid = new Array(cols);
+        nextGrid = new Array(cols);
+
+        for (let x = 0; x < cols; x++) {
+          grid[x] = new Array(rows);
+          nextGrid[x] = new Array(rows);
+          for (let y = 0; y < rows; y++) {
+            // Sparse random stars
+            grid[x][y] = Math.random() < 0.01 ? 1 : 0;
+            nextGrid[x][y] = 0;
+          }
+        }
+      }
+
+      function countNeighbors(x, y) {
+        let count = 0;
+        for (let dx = -1; dx <= 1; dx++) {
+          for (let dy = -1; dy <= 1; dy++) {
+            if (dx === 0 && dy === 0) continue;
+
+            const nx = x + dx;
+            const ny = y + dy;
+
+            if (nx >= 0 && nx < cols && ny >= 0 && ny < rows) {
+              count += grid[nx][ny];
+            }
+          }
+        }
+        return count;
+      }
+
+      function updateGrid() {
+        // Custom cellular automata rules for starfield
+        for (let x = 0; x < cols; x++) {
+          for (let y = 0; y < rows; y++) {
+            const neighbors = countNeighbors(x, y);
+            const current = grid[x][y];
+
+            // Starfield rules
+            if (current === 1) {
+              // Star survives with 2-3 neighbors, dies otherwise
+              nextGrid[x][y] = (neighbors === 2 || neighbors === 3) ? 1 : 0;
+            } else {
+              // Empty space becomes star with exactly 3 neighbors
+              nextGrid[x][y] = neighbors === 3 ? 1 : 0;
+            }
+
+            // Add some random twinkling
+            if (Math.random() < 0.001) {
+              nextGrid[x][y] = 1;
+            }
+
+            // Fade out rule - occasionally kill stars
+            if (current === 1 && Math.random() < 0.02) {
+              nextGrid[x][y] = 0;
+            }
+          }
+        }
+
+        // Swap grids
+        [grid, nextGrid] = [nextGrid, grid];
+      }
+
+      function drawStars(centerX, centerY) {
+        const gridX = Math.floor(centerX / GRID_SIZE);
+        const gridY = Math.floor(centerY / GRID_SIZE);
+
+        // Draw a small brush of stars
+        const brushSize = 3;
+        for (let x = gridX - brushSize; x <= gridX + brushSize; x++) {
+          for (let y = gridY - brushSize; y <= gridY + brushSize; y++) {
+            if (x >= 0 && x < cols && y >= 0 && y < rows) {
+              const dist = Math.sqrt((x - gridX) ** 2 + (y - gridY) ** 2);
+              if (dist <= brushSize) {
+                // Probabilistic drawing for organic feel
+                if (Math.random() < 0.7) {
+                  grid[x][y] = 1;
+                }
+              }
+            }
+          }
+        }
+      }
+
+      function drawLine(x1, y1, x2, y2) {
+        // Simple line drawing between two points
+        const dx = Math.abs(x2 - x1);
+        const dy = Math.abs(y2 - y1);
+        const steps = Math.max(dx, dy);
+
+        for (let i = 0; i <= steps; i++) {
+          const t = steps === 0 ? 0 : i / steps;
+          const x = x1 + t * (x2 - x1);
+          const y = y1 + t * (y2 - y1);
+          drawStars(x, y);
+        }
+      }
+
+      function draw() {
+        // Clear with theme-aware background
+        ctx.fillStyle = bgColor;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Draw grid with theme-aware star color
+        ctx.fillStyle = starColor;
+        for (let x = 0; x < cols; x++) {
+          for (let y = 0; y < rows; y++) {
+            if (grid[x][y] === 1) {
+              ctx.fillRect(x * GRID_SIZE, y * GRID_SIZE, GRID_SIZE, GRID_SIZE);
+            }
+          }
+        }
+      }
+
+      function animate() {
+        frame++;
+
+        // Update every few frames for smoother animation
+        if (frame % 8 === 0) {
+          updateGrid();
+        }
+
+        draw();
+        requestAnimationFrame(animate);
+      }
+
+      // Setup event listeners only for interactive canvas
+      if (interactive) {
+        window.addEventListener('resize', resize);
+
+        // Mouse events
+        canvas.addEventListener('mousedown', (e) => {
+          initAudio();
+          const rect = canvas.getBoundingClientRect();
+          mouseX = e.clientX - rect.left;
+          mouseY = e.clientY - rect.top;
+          isDragging = true;
+          lastDrawX = mouseX;
+          lastDrawY = mouseY;
+
+          drawStars(mouseX, mouseY);
+          beep(600 + Math.random() * 200, 0.1);
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+          const rect = canvas.getBoundingClientRect();
+          mouseX = e.clientX - rect.left;
+          mouseY = e.clientY - rect.top;
+
+          if (isDragging) {
+            drawLine(lastDrawX, lastDrawY, mouseX, mouseY);
+            lastDrawX = mouseX;
+            lastDrawY = mouseY;
+
+            // Soft drawing sounds
+            if (Math.random() < 0.3) {
+              beep(800 + Math.random() * 400, 0.05, 0.01);
+            }
+          }
+        });
+
+        canvas.addEventListener('mouseup', () => {
+          isDragging = false;
+          beep(400, 0.2);
+        });
+
+        canvas.addEventListener('mouseleave', () => {
+          isDragging = false;
+        });
+
+        // Touch events
+        canvas.addEventListener('touchstart', (e) => {
+          initAudio();
+          e.preventDefault();
+          const touch = e.touches[0];
+          const rect = canvas.getBoundingClientRect();
+          mouseX = touch.clientX - rect.left;
+          mouseY = touch.clientY - rect.top;
+          isDragging = true;
+          lastDrawX = mouseX;
+          lastDrawY = mouseY;
+
+          drawStars(mouseX, mouseY);
+          beep(600 + Math.random() * 200, 0.1);
+        });
+
+        canvas.addEventListener('touchmove', (e) => {
+          e.preventDefault();
+          const touch = e.touches[0];
+          const rect = canvas.getBoundingClientRect();
+          mouseX = touch.clientX - rect.left;
+          mouseY = touch.clientY - rect.top;
+
+          if (isDragging) {
+            drawLine(lastDrawX, lastDrawY, mouseX, mouseY);
+            lastDrawX = mouseX;
+            lastDrawY = mouseY;
+
+            // Soft drawing sounds
+            if (Math.random() < 0.2) {
+              beep(800 + Math.random() * 400, 0.05, 0.01);
+            }
+          }
+        });
+
+        canvas.addEventListener('touchend', (e) => {
+          e.preventDefault();
+          isDragging = false;
+          beep(400, 0.2);
+        });
+      } else {
+        // Background canvas: just resize
+        window.addEventListener('resize', resize);
+      }
+
+      // Return public interface
+      return {
+        resize,
+        animate
+      };
+    }
+
+    // Initialize both starfield instances
+    updateStarfieldTheme();
+    const backgroundStarfield = createStarfield(document.getElementById('starfield-canvas'), false);
+    const interactiveStarfield = createStarfield(document.getElementById('interactive-canvas'), true);
+
+    backgroundStarfield.resize();
+    backgroundStarfield.animate();
+
+    interactiveStarfield.resize();
+    interactiveStarfield.animate();
   </script>
 
 </body>

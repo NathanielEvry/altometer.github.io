@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Retro Starfield - Cellular Automata</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #000;
+      overflow: hidden;
+      font-family: 'Courier New', monospace;
+      cursor: crosshair;
+    }
+
+    #canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      image-rendering: pixelated;
+      image-rendering: -moz-crisp-edges;
+      image-rendering: crisp-edges;
+    }
+
+    .info {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      color: #333;
+      font-size: 11px;
+      z-index: 5;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+  <div class="info">CELLULAR STARFIELD • CLICK & DRAG TO PAINT STARS</div>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    // Grid dimensions - small for performance
+    const GRID_SIZE = 4;
+    let cols, rows;
+    let grid, nextGrid;
+    let mouseX = 0, mouseY = 0;
+    let frame = 0;
+    let isDragging = false;
+    let lastDrawX = -1, lastDrawY = -1;
+    
+    // Audio setup
+    let audioContext;
+    let isAudioEnabled = false;
+    
+    function initAudio() {
+      if (!isAudioEnabled) {
+        try {
+          audioContext = new (window.AudioContext || window.webkitAudioContext)();
+          isAudioEnabled = true;
+        } catch (e) {}
+      }
+    }
+    
+    function beep(freq = 800, duration = 0.1, vol = 0.02) {
+      if (!isAudioEnabled) return;
+      
+      const osc = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+      
+      osc.connect(gain);
+      gain.connect(audioContext.destination);
+      
+      osc.frequency.value = freq;
+      osc.type = 'square';
+      
+      gain.gain.setValueAtTime(0, audioContext.currentTime);
+      gain.gain.linearRampToValueAtTime(vol, audioContext.currentTime + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+      
+      osc.start();
+      osc.stop(audioContext.currentTime + duration);
+    }
+    
+    function resize() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      
+      cols = Math.floor(canvas.width / GRID_SIZE);
+      rows = Math.floor(canvas.height / GRID_SIZE);
+      
+      // Initialize grids
+      grid = new Array(cols);
+      nextGrid = new Array(cols);
+      
+      for (let x = 0; x < cols; x++) {
+        grid[x] = new Array(rows);
+        nextGrid[x] = new Array(rows);
+        for (let y = 0; y < rows; y++) {
+          // Sparse random stars
+          grid[x][y] = Math.random() < 0.01 ? 1 : 0;
+          nextGrid[x][y] = 0;
+        }
+      }
+    }
+    
+    function countNeighbors(x, y) {
+      let count = 0;
+      for (let dx = -1; dx <= 1; dx++) {
+        for (let dy = -1; dy <= 1; dy++) {
+          if (dx === 0 && dy === 0) continue;
+          
+          const nx = x + dx;
+          const ny = y + dy;
+          
+          if (nx >= 0 && nx < cols && ny >= 0 && ny < rows) {
+            count += grid[nx][ny];
+          }
+        }
+      }
+      return count;
+    }
+    
+    function updateGrid() {
+      // Custom cellular automata rules for starfield
+      for (let x = 0; x < cols; x++) {
+        for (let y = 0; y < rows; y++) {
+          const neighbors = countNeighbors(x, y);
+          const current = grid[x][y];
+          
+          // Starfield rules (simplified)
+          if (current === 1) {
+            // Star survives with 2-3 neighbors, dies otherwise
+            nextGrid[x][y] = (neighbors === 2 || neighbors === 3) ? 1 : 0;
+          } else {
+            // Empty space becomes star with exactly 3 neighbors
+            nextGrid[x][y] = neighbors === 3 ? 1 : 0;
+          }
+          
+          // Add some random twinkling
+          if (Math.random() < 0.001) {
+            nextGrid[x][y] = 1;
+          }
+          
+          // Fade out rule - occasionally kill stars
+          if (current === 1 && Math.random() < 0.02) {
+            nextGrid[x][y] = 0;
+          }
+        }
+      }
+      
+      // Swap grids
+      [grid, nextGrid] = [nextGrid, grid];
+    }
+    
+    function drawStars(centerX, centerY) {
+      const gridX = Math.floor(centerX / GRID_SIZE);
+      const gridY = Math.floor(centerY / GRID_SIZE);
+      
+      // Draw a small brush of stars
+      const brushSize = 3;
+      for (let x = gridX - brushSize; x <= gridX + brushSize; x++) {
+        for (let y = gridY - brushSize; y <= gridY + brushSize; y++) {
+          if (x >= 0 && x < cols && y >= 0 && y < rows) {
+            const dist = Math.sqrt((x - gridX) ** 2 + (y - gridY) ** 2);
+            if (dist <= brushSize) {
+              // Probabilistic drawing for organic feel
+              if (Math.random() < 0.7) {
+                grid[x][y] = 1;
+              }
+            }
+          }
+        }
+      }
+    }
+    
+    function drawLine(x1, y1, x2, y2) {
+      // Simple line drawing between two points
+      const dx = Math.abs(x2 - x1);
+      const dy = Math.abs(y2 - y1);
+      const steps = Math.max(dx, dy);
+      
+      for (let i = 0; i <= steps; i++) {
+        const t = steps === 0 ? 0 : i / steps;
+        const x = x1 + t * (x2 - x1);
+        const y = y1 + t * (y2 - y1);
+        drawStars(x, y);
+      }
+    }
+    
+    function draw() {
+      // Clear with black
+      ctx.fillStyle = '#000';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      // Draw grid as white pixels
+      ctx.fillStyle = '#fff';
+      for (let x = 0; x < cols; x++) {
+        for (let y = 0; y < rows; y++) {
+          if (grid[x][y] === 1) {
+            ctx.fillRect(x * GRID_SIZE, y * GRID_SIZE, GRID_SIZE, GRID_SIZE);
+          }
+        }
+      }
+    }
+    
+    function animate() {
+      frame++;
+      
+      // Update every few frames for smoother animation
+      if (frame % 8 === 0) {
+        updateGrid();
+      }
+      
+      draw();
+      requestAnimationFrame(animate);
+    }
+    
+    // Event listeners
+    window.addEventListener('resize', resize);
+    
+    // Mouse events
+    canvas.addEventListener('mousedown', (e) => {
+      initAudio();
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+      isDragging = true;
+      lastDrawX = mouseX;
+      lastDrawY = mouseY;
+      
+      drawStars(mouseX, mouseY);
+      beep(600 + Math.random() * 200, 0.1);
+    });
+    
+    canvas.addEventListener('mousemove', (e) => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+      
+      if (isDragging) {
+        drawLine(lastDrawX, lastDrawY, mouseX, mouseY);
+        lastDrawX = mouseX;
+        lastDrawY = mouseY;
+        
+        // Soft drawing sounds
+        if (Math.random() < 0.3) {
+          beep(800 + Math.random() * 400, 0.05, 0.01);
+        }
+      }
+    });
+    
+    canvas.addEventListener('mouseup', () => {
+      isDragging = false;
+      beep(400, 0.2);
+    });
+    
+    // Touch events
+    canvas.addEventListener('touchstart', (e) => {
+      initAudio();
+      e.preventDefault();
+      const touch = e.touches[0];
+      mouseX = touch.clientX;
+      mouseY = touch.clientY;
+      isDragging = true;
+      lastDrawX = mouseX;
+      lastDrawY = mouseY;
+      
+      drawStars(mouseX, mouseY);
+      beep(600 + Math.random() * 200, 0.1);
+    });
+    
+    canvas.addEventListener('touchmove', (e) => {
+      e.preventDefault();
+      const touch = e.touches[0];
+      mouseX = touch.clientX;
+      mouseY = touch.clientY;
+      
+      if (isDragging) {
+        drawLine(lastDrawX, lastDrawY, mouseX, mouseY);
+        lastDrawX = mouseX;
+        lastDrawY = mouseY;
+        
+        // Soft drawing sounds
+        if (Math.random() < 0.2) {
+          beep(800 + Math.random() * 400, 0.05, 0.01);
+        }
+      }
+    });
+    
+    canvas.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      isDragging = false;
+      beep(400, 0.2);
+    });
+    
+    // Initialize
+    resize();
+    animate();
+  </script>
+</body>
+</html>
